@@ -2,10 +2,25 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+/**
+ * @property int $job_listing_id
+ * @property int $user_id
+ * @property string $name
+ * @property string $email
+ * @property string|null $phone
+ * @property string $resume_path
+ * @property float|null $expected_salary
+ * @property array|null $ats_score
+ * @property array|null $matched_keywords
+ * @property array|null $missing_keywords
+ * @property string $status
+ * @property string|null $employer_notes
+ */
 class Application extends Model
 {
     use HasFactory, SoftDeletes;
@@ -77,27 +92,27 @@ class Application extends Model
         // Will be implemented with ATSService
     }
 
-    public function scopeWithStatus($query, $status)
+    public function scopeWithStatus(Builder $query, string $status): Builder
     {
         return $query->where('status', $status);
     }
 
-    public function scopePending($query)
+    public function scopePending(Builder $query): Builder
     {
         return $query->where('status', 'pending');
     }
 
-    public function scopeReviewed($query)
+    public function scopeReviewed(Builder $query): Builder
     {
         return $query->where('status', 'reviewed');
     }
 
-    public function scopeShortlisted($query)
+    public function scopeShortlisted(Builder $query): Builder
     {
         return $query->where('status', 'shortlisted');
     }
 
-    public function scopeForJob($query, $jobListingId)
+    public function scopeForJob(Builder $query, int $jobListingId): Builder
     {
         return $query->where('job_listing_id', $jobListingId);
     }

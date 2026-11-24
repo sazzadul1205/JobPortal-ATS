@@ -2,10 +2,16 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+/**
+ * @property string $name
+ * @property string|null $address
+ * @property bool $is_active
+ */
 class Location extends Model
 {
     use HasFactory, SoftDeletes;
@@ -25,7 +31,7 @@ class Location extends Model
         return $this->hasMany(JobListing::class);
     }
 
-    public function scopeActive($query)
+    public function scopeActive(Builder $query): Builder
     {
         return $query->where('is_active', true);
     }

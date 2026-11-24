@@ -6,6 +6,16 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+/**
+ * @property int $user_id
+ * @property string $first_name
+ * @property string $last_name
+ * @property string|null $birth_date
+ * @property string $email
+ * @property string|null $phone
+ * @property string|null $photo_path
+ * @property string|null $cv_path
+ */
 class ApplicantProfile extends Model
 {
     use HasFactory, SoftDeletes;

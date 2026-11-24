@@ -2,10 +2,33 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+/**
+ * @property string $title
+ * @property string $slug
+ * @property string $description
+ * @property string $requirements
+ * @property int $location_id
+ * @property string|null $salary
+ * @property string $job_type
+ * @property int $category_id
+ * @property string $experience_level
+ * @property string|null $education_requirement
+ * @property array|null $benefits
+ * @property array|null $skills
+ * @property array|null $responsibilities
+ * @property array|null $keywords
+ * @property string $application_deadline
+ * @property string|null $schedule_start_date
+ * @property bool $is_active
+ * @property int $user_id
+ * @property bool $show_linkedin
+ * @property bool $show_facebook
+ */
 class JobListing extends Model
 {
     use HasFactory, SoftDeletes;
@@ -65,23 +88,23 @@ class JobListing extends Model
         return $this->hasMany(Application::class);
     }
 
-    public function scopeActive($query)
+    public function scopeActive(Builder $query): Builder
     {
         return $query->where('is_active', true)
             ->where('application_deadline', '>=', now());
     }
 
-    public function scopeByType($query, $type)
+    public function scopeByType(Builder $query, string $type): Builder
     {
         return $query->where('job_type', $type);
     }
 
-    public function scopeByCategory($query, $categoryId)
+    public function scopeByCategory(Builder $query, int $categoryId): Builder
     {
         return $query->where('category_id', $categoryId);
     }
 
-    public function scopeByLocation($query, $locationId)
+    public function scopeByLocation(Builder $query, int $locationId): Builder
     {
         return $query->where('location_id', $locationId);
     }
