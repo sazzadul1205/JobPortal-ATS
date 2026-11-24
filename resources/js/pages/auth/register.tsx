@@ -7,6 +7,7 @@ interface RegisterForm {
     email: string;
     password: string;
     password_confirmation: string;
+    role: string;
 }
 
 // Required so the interface satisfies Inertia's FormDataType constraint
@@ -18,6 +19,7 @@ export default function Register() {
         email: '',
         password: '',
         password_confirmation: '',
+        role: 'job_seeker',
     });
 
     const [showPassword, setShowPassword] = useState(false);
@@ -165,10 +167,29 @@ export default function Register() {
                                 {errors.password_confirmation && <p className="mt-1.5 text-sm text-red-600">{errors.password_confirmation}</p>}
                             </div>
 
+                            {/* Role */}
+                            <div>
+                                <label htmlFor="role" className="mb-1.5 block text-sm font-medium text-slate-700">
+                                    Register as
+                                </label>
+                                <select
+                                    id="role"
+                                    tabIndex={5}
+                                    disabled={processing}
+                                    value={data.role}
+                                    onChange={(e) => setData('role', e.target.value)}
+                                    className={inputClass(errors.role)}
+                                >
+                                    <option value="job_seeker">Job Seeker</option>
+                                    <option value="employer">Employer</option>
+                                </select>
+                                {errors.role && <p className="mt-1.5 text-sm text-red-600">{errors.role}</p>}
+                            </div>
+
                             {/* Submit */}
                             <button
                                 type="submit"
-                                tabIndex={5}
+                                tabIndex={6}
                                 disabled={processing}
                                 className="mt-2 flex w-full items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-60"
                             >
@@ -180,7 +201,7 @@ export default function Register() {
                         {/* Footer */}
                         <p className="mt-6 text-center text-sm text-slate-500">
                             Already have an account?{' '}
-                            <a href={route('login')} tabIndex={6} className="font-semibold text-indigo-600 transition hover:text-indigo-700">
+                            <a href={route('login')} tabIndex={7} className="font-semibold text-indigo-600 transition hover:text-indigo-700">
                                 Log in
                             </a>
                         </p>
