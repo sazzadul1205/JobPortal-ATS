@@ -18,4 +18,9 @@ export default defineConfig({
     esbuild: {
         jsx: 'automatic',
     },
+    server: {
+        watch: {
+            ignored: ['**/Plan/**', '**/node_modules/**', '**/vendor/**', '**/storage/**', '**/bootstrap/cache/**'],
+        },
+    },
 });
