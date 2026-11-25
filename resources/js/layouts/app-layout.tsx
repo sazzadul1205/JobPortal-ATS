@@ -1,6 +1,6 @@
 import { cn } from '@/lib/utils';
 import { type BreadcrumbItem } from '@/types';
-import { Link, usePage } from '@inertiajs/react';
+import { Link, router, usePage } from '@inertiajs/react';
 import { Briefcase, ChevronRight, FileText, LayoutDashboard, Menu, Settings, Users, X } from 'lucide-react';
 import { useState } from 'react';
 
@@ -92,6 +92,13 @@ export default function AppLayout({ children, breadcrumbs = [] }: AppLayoutProps
                             <p className="text-muted-foreground truncate text-xs">{props.auth?.user?.email ?? ''}</p>
                         </div>
                     </div>
+                    <button
+                        type="button"
+                        onClick={() => router.post(route('logout'))}
+                        className="mt-2 w-full rounded-lg bg-red-600 px-3 py-2 text-sm font-semibold text-white transition hover:bg-red-700"
+                    >
+                        Logout
+                    </button>
                 </div>
             </aside>
 

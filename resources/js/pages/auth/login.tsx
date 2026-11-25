@@ -1,5 +1,5 @@
 import { Head, useForm } from '@inertiajs/react';
-import { Eye, EyeOff, LoaderCircle, Lock, Mail } from 'lucide-react';
+import { Briefcase, Eye, EyeOff, LoaderCircle, Lock, Mail } from 'lucide-react';
 import { FormEventHandler, useState } from 'react';
 
 interface LoginForm {
@@ -40,10 +40,10 @@ export default function Login({ status }: LoginProps) {
                         {/* Header */}
                         <div className="mb-8 text-center">
                             <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-indigo-100">
-                                <Lock className="h-6 w-6 text-indigo-600" />
+                                <Briefcase className="h-6 w-6 text-indigo-600" />
                             </div>
-                            <h1 className="text-2xl font-bold text-slate-900">Welcome back</h1>
-                            <p className="mt-1 text-sm text-slate-500">Enter your email and password below to log in</p>
+                            <h1 className="text-2xl font-bold text-slate-900">Job Portal ATS</h1>
+                            <p className="mt-1 text-sm text-slate-500">Sign in to manage your job portal</p>
                         </div>
 
                         {/* Status message */}
@@ -52,6 +52,31 @@ export default function Login({ status }: LoginProps) {
                                 {status}
                             </div>
                         )}
+
+                        {/* Quick login buttons */}
+                        <div className="mb-6 flex flex-wrap gap-2">
+                            <button
+                                type="button"
+                                onClick={() => { setData('email', 'admin@jobportal.com'); setData('password', 'password123'); }}
+                                className="flex-1 rounded-lg border border-slate-300 bg-slate-50 px-3 py-2 text-xs font-medium text-slate-700 transition hover:bg-slate-100"
+                            >
+                                Admin
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => { setData('email', 'hr@techcorp.com'); setData('password', 'password123'); }}
+                                className="flex-1 rounded-lg border border-slate-300 bg-slate-50 px-3 py-2 text-xs font-medium text-slate-700 transition hover:bg-slate-100"
+                            >
+                                Employer
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => { setData('email', 'rahim.ahmed@email.com'); setData('password', 'password123'); }}
+                                className="flex-1 rounded-lg border border-slate-300 bg-slate-50 px-3 py-2 text-xs font-medium text-slate-700 transition hover:bg-slate-100"
+                            >
+                                Job Seeker
+                            </button>
+                        </div>
 
                         <form className="flex flex-col gap-5" onSubmit={submit}>
                             {/* Email */}

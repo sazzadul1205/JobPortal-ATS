@@ -4,6 +4,7 @@ use App\Http\Controllers\ApplicationController;
 use App\Http\Controllers\JobCategoryController;
 use App\Http\Controllers\JobListingController;
 use App\Http\Controllers\LocationController;
+use App\Models\User;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -19,6 +20,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('dashboard', function () {
         return Inertia::render('dashboard');
     })->name('dashboard');
+    Route::get('/applications', [ApplicationController::class, 'index'])->name('applications.index');
+    Route::get('/candidates', fn () => Inertia::render('candidates/index'))->name('candidates.index');
 
     // Job seeker application routes
     Route::get('/applications/{jobListing}/create', [ApplicationController::class, 'create'])->name('applications.create');
@@ -76,6 +79,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('analytics/ats-stats', [ApplicationController::class, 'getATSStats'])->name('analytics.ats-stats');
     });
 
+    Route::get('/settings', fn () => Inertia::render('settings/index'))->name('settings.index');
     // Settings routes
     Route::prefix('settings')->name('settings.')->group(function () {
         Route::get('profile', fn () => Inertia::render('settings/profile'))->name('profile');
