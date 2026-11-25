@@ -179,7 +179,7 @@ describe('JobCategoryController', function () {
             $category = JobCategory::factory()->create();
             $location = Location::factory()->create();
             $employer = User::factory()->employer()->create();
-            JobListing::factory()->create(['category_id' => $category->id, 'location_id' => $location->id, 'user_id' => $employer->id]);
+            JobListing::factory()->withLocation($location)->create(['category_id' => $category->id, 'user_id' => $employer->id]);
             actingAs($this->admin);
             $response = delete(route('backend.categories.destroy', $category));
             $response->assertRedirect();
@@ -248,7 +248,7 @@ describe('JobCategoryController', function () {
             $category = JobCategory::factory()->create();
             $location = Location::factory()->create();
             $employer = User::factory()->employer()->create();
-            JobListing::factory()->create(['category_id' => $category->id, 'location_id' => $location->id, 'user_id' => $employer->id]);
+            JobListing::factory()->withLocation($location)->create(['category_id' => $category->id, 'user_id' => $employer->id]);
             $category->delete();
             actingAs($this->admin);
             $response = delete(route('backend.categories.force-delete', $category->id));

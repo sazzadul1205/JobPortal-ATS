@@ -135,4 +135,11 @@ class JobListingFactory extends Factory
     {
         return $this->state(['job_type' => 'remote']);
     }
+
+    public function withLocation($location): static
+    {
+        return $this->afterCreating(function (JobListing $listing) use ($location) {
+            $listing->locations()->attach($location);
+        });
+    }
 }

@@ -36,7 +36,7 @@ class ApplicationController extends Controller
     public function index(Request $request): Response
     {
         $user = Auth::user();
-        $query = Application::with(['jobListing.category', 'jobListing.location', 'user', 'applicantProfile']);
+        $query = Application::with(['jobListing.category', 'jobListing.locations', 'user', 'applicantProfile']);
 
         if ($user->role === 'job_seeker') {
             $query->where('user_id', $user->id);

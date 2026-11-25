@@ -29,7 +29,7 @@ return new class extends Migration
     {
         Schema::table('job_listings', function (Blueprint $table) {
             $table->dropColumn(['salary_min', 'salary_max', 'is_salary_negotiable', 'as_per_companies_policy', 'education_details', 'publish_at', 'views_count', 'required_facebook_link', 'required_linkedin_link']);
-            $table->foreignId('location_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('location_id')->nullable()->constrained()->cascadeOnDelete();
             $table->string('salary')->nullable();
             $table->date('schedule_start_date')->nullable();
             $table->boolean('show_linkedin')->default(false);

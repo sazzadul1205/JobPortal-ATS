@@ -29,10 +29,9 @@ beforeEach(function () {
     $this->otherJobSeeker = User::factory()->jobSeeker()->create();
     $this->category = JobCategory::factory()->create();
     $this->location = Location::factory()->create();
-    $this->jobListing = JobListing::factory()->create([
+    $this->jobListing = JobListing::factory()->withLocation($this->location)->create([
         'user_id' => $this->employer->id,
         'category_id' => $this->category->id,
-        'location_id' => $this->location->id,
         'is_active' => true,
         'application_deadline' => now()->addDays(30),
     ]);

@@ -162,7 +162,7 @@ describe('LocationController', function () {
             $location = Location::factory()->create();
             $category = JobCategory::factory()->create();
             $employer = User::factory()->employer()->create();
-            JobListing::factory()->create(['location_id' => $location->id, 'category_id' => $category->id, 'user_id' => $employer->id]);
+            JobListing::factory()->withLocation($location)->create(['category_id' => $category->id, 'user_id' => $employer->id]);
             actingAs($this->admin);
             $response = delete(route('backend.locations.destroy', $location));
             $response->assertRedirect();
@@ -231,7 +231,7 @@ describe('LocationController', function () {
             $location = Location::factory()->create();
             $category = JobCategory::factory()->create();
             $employer = User::factory()->employer()->create();
-            JobListing::factory()->create(['location_id' => $location->id, 'category_id' => $category->id, 'user_id' => $employer->id]);
+            JobListing::factory()->withLocation($location)->create(['category_id' => $category->id, 'user_id' => $employer->id]);
             $location->delete();
             actingAs($this->admin);
             $response = delete(route('backend.locations.force-delete', $location->id));
