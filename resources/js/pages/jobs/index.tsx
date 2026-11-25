@@ -24,7 +24,7 @@ export default function JobsIndex({ jobs, filters, categories, locations }: Jobs
     return (
         <AppLayout>
             <Head title="Jobs" />
-            <div className="mx-auto max-w-7xl px-4 py-8">
+            <div className="mx-auto">
                 <h1 className="mb-6 text-2xl font-bold text-slate-900">Available Jobs</h1>
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                     {jobs.data.map((job) => (
@@ -33,7 +33,7 @@ export default function JobsIndex({ jobs, filters, categories, locations }: Jobs
                             <p className="mt-1 text-sm text-slate-500">
                                 {job.category?.name} · {job.location?.name}
                             </p>
-                            <p className="mt-2 text-sm text-slate-600 line-clamp-3">{job.description}</p>
+                            <p className="mt-2 line-clamp-3 text-sm text-slate-600">{job.description}</p>
                             <div className="mt-4 flex items-center justify-between">
                                 <span className="text-xs text-slate-400">{job.job_type}</span>
                                 <Link href={route('jobs.show', job)} className="text-sm font-medium text-indigo-600 hover:text-indigo-700">

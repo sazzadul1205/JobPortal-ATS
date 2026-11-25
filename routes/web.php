@@ -21,7 +21,11 @@ Route::middleware(['auth'])->group(function () {
         return Inertia::render('dashboard');
     })->name('dashboard');
     Route::get('/applications', [ApplicationController::class, 'index'])->name('applications.index');
-    Route::get('/candidates', fn () => Inertia::render('candidates/index'))->name('candidates.index');
+    Route::get('/candidates', function () {
+        return Inertia::render('candidates/index', [
+            'candidates' => User::where('role', 'job_seeker')->get(['id', 'name', 'email']),
+        ]);
+    })->name('candidates.index');
 
     // Job seeker application routes
     Route::get('/applications/{jobListing}/create', [ApplicationController::class, 'create'])->name('applications.create');
