@@ -39,7 +39,7 @@ class ApplicationStoreRequest extends FormRequest
         ];
     }
 
-    public function withValidator($validator)
+    public function withValidator(\Illuminate\Contracts\Validation\Validator $validator)
     {
         $validator->after(function ($validator) {
             $jobListingParam = $this->route('jobListing');

@@ -15,6 +15,9 @@ class AuthenticatedSessionController extends Controller
     /**
      * Show the login page.
      */
+    /**
+     * Handle create request.
+     */
     public function create(Request $request): Response
     {
         return Inertia::render('auth/login', [
@@ -24,6 +27,9 @@ class AuthenticatedSessionController extends Controller
 
     /**
      * Handle an incoming authentication request.
+     */
+    /**
+     * Handle store request.
      */
     public function store(LoginRequest $request): RedirectResponse
     {
@@ -36,6 +42,9 @@ class AuthenticatedSessionController extends Controller
 
     /**
      * Destroy an authenticated session.
+     */
+    /**
+     * Handle destroy request.
      */
     public function destroy(Request $request): RedirectResponse
     {

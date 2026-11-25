@@ -17,29 +17,42 @@ use Inertia\Response;
 
 class JobListingController extends Controller
 {
+    /**
+     * Handle index request.
+     */
     public function index(Request $request): Response
     {
         $this->authorize('viewAny', JobListing::class);
 
         $query = JobListing::with(['category', 'location', 'user'])
             ->withTrashed()
-            ->when($request->input('search'), fn ($q, $search) => $q->where('title', 'like', "%{$search}%")
-                ->orWhere('description', 'like', "%{$search}%")
+            ->when(
+                $request->input('search'),
+                fn($q, $search) => $q->where('title', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%")
             )
-            ->when($request->input('category'), fn ($q, $category) => $q->where('category_id', $category)
+            ->when(
+                $request->input('category'),
+                fn($q, $category) => $q->where('category_id', $category)
             )
-            ->when($request->input('location'), fn ($q, $location) => $q->where('location_id', $location)
+            ->when(
+                $request->input('location'),
+                fn($q, $location) => $q->where('location_id', $location)
             )
-            ->when($request->input('job_type'), fn ($q, $type) => $q->where('job_type', $type)
+            ->when(
+                $request->input('job_type'),
+                fn($q, $type) => $q->where('job_type', $type)
             )
-            ->when($request->input('experience_level'), fn ($q, $level) => $q->where('experience_level', $level)
+            ->when(
+                $request->input('experience_level'),
+                fn($q, $level) => $q->where('experience_level', $level)
             )
             ->when($request->input('status'), function ($q, $status) {
-                if ($status === 'active') {
+                if ((string) $status === 'active') {
                     $q->where('is_active', true);
-                } elseif ($status === 'inactive') {
+                } elseif ((string) $status === 'inactive') {
                     $q->where('is_active', false);
-                } elseif ($status === 'trashed') {
+                } elseif ((string) $status === 'trashed') {
                     $q->onlyTrashed();
                 }
             })
@@ -61,6 +74,9 @@ class JobListingController extends Controller
         ]);
     }
 
+    /**
+     * Handle create request.
+     */
     public function create(): Response
     {
         $this->authorize('create', JobListing::class);
@@ -74,6 +90,9 @@ class JobListingController extends Controller
         ]);
     }
 
+    /**
+     * Handle store request.
+     */
     public function store(JobListingStoreRequest $request): RedirectResponse
     {
         $this->authorize('create', JobListing::class);
@@ -109,6 +128,9 @@ class JobListingController extends Controller
             ->with('success', 'Job listing created successfully.');
     }
 
+    /**
+     * Handle show request.
+     */
     public function show(JobListing $jobListing): Response
     {
         $this->authorize('view', $jobListing);
@@ -124,6 +146,9 @@ class JobListingController extends Controller
         ]);
     }
 
+    /**
+     * Handle edit request.
+     */
     public function edit(JobListing $jobListing): Response
     {
         $this->authorize('update', $jobListing);
@@ -140,6 +165,9 @@ class JobListingController extends Controller
         ]);
     }
 
+    /**
+     * Handle update request.
+     */
     public function update(JobListingUpdateRequest $request, JobListing $jobListing): RedirectResponse
     {
         $this->authorize('update', $jobListing);
@@ -151,7 +179,7 @@ class JobListingController extends Controller
             $slug = $this->generateUniqueSlug($validated['title'], $jobListing->id);
         }
 
-        $isActive = $this->determineStatusFromDates($validated, $jobListing);
+        $isActive = $this->determineStatusFromDates($validated);
 
         $jobListing->update([
             'title' => $validated['title'],
@@ -179,6 +207,9 @@ class JobListingController extends Controller
             ->with('success', 'Job listing updated successfully.');
     }
 
+    /**
+     * Handle destroy request.
+     */
     public function destroy(JobListing $jobListing): RedirectResponse
     {
         $this->authorize('delete', $jobListing);
@@ -193,6 +224,9 @@ class JobListingController extends Controller
             ->with('success', 'Job listing deleted successfully.');
     }
 
+    /**
+     * Handle toggleActive request.
+     */
     public function toggleActive(JobListing $jobListing): RedirectResponse
     {
         $this->authorize('update', $jobListing);
@@ -202,6 +236,9 @@ class JobListingController extends Controller
         return back()->with('success', $jobListing->is_active ? 'Job listing activated.' : 'Job listing deactivated.');
     }
 
+    /**
+     * Handle applications request.
+     */
     public function applications(JobListing $jobListing): Response
     {
         $this->authorize('viewApplications', $jobListing);
@@ -217,22 +254,35 @@ class JobListingController extends Controller
         ]);
     }
 
+    /**
+     * Handle publicIndex request.
+     */
     public function publicIndex(Request $request): Response
     {
         $query = JobListing::with(['category', 'location', 'user'])
             ->where('is_active', true)
             ->where('application_deadline', '>=', now())
-            ->when($request->input('search'), fn ($q, $search) => $q->where('title', 'like', "%{$search}%")
-                ->orWhere('description', 'like', "%{$search}%")
-                ->orWhereHas('location', fn ($lq) => $lq->where('name', 'like', "%{$search}%"))
+            ->when(
+                $request->input('search'),
+                fn($q, $search) => $q->where('title', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%")
+                    ->orWhereHas('location', fn($lq) => $lq->where('name', 'like', "%{$search}%"))
             )
-            ->when($request->input('category'), fn ($q, $category) => $q->where('category_id', $category)
+            ->when(
+                $request->input('category'),
+                fn($q, $category) => $q->where('category_id', $category)
             )
-            ->when($request->input('location'), fn ($q, $location) => $q->where('location_id', $location)
+            ->when(
+                $request->input('location'),
+                fn($q, $location) => $q->where('location_id', $location)
             )
-            ->when($request->input('job_type'), fn ($q, $type) => $q->where('job_type', $type)
+            ->when(
+                $request->input('job_type'),
+                fn($q, $type) => $q->where('job_type', $type)
             )
-            ->when($request->input('experience_level'), fn ($q, $level) => $q->where('experience_level', $level)
+            ->when(
+                $request->input('experience_level'),
+                fn($q, $level) => $q->where('experience_level', $level)
             )
             ->latest();
 
@@ -249,6 +299,9 @@ class JobListingController extends Controller
         ]);
     }
 
+    /**
+     * Handle publicShow request.
+     */
     public function publicShow(JobListing $jobListing): Response
     {
         $jobListing->load(['category', 'location', 'user']);
@@ -276,10 +329,10 @@ class JobListingController extends Controller
         $counter = 1;
 
         while (JobListing::where('slug', $slug)
-            ->when($excludeId, fn ($q) => $q->where('id', '!=', $excludeId))
+            ->when($excludeId, fn($q) => $q->where('id', '!=', $excludeId))
             ->exists()
         ) {
-            $slug = $baseSlug.'-'.$counter;
+            $slug = $baseSlug . '-' . $counter;
             $counter++;
         }
 
@@ -302,7 +355,7 @@ class JobListingController extends Controller
         return true;
     }
 
-    protected function determineStatusFromDates(array $data, JobListing $jobListing): bool
+    protected function determineStatusFromDates(array $data): bool
     {
         $deadline = Carbon::parse($data['application_deadline']);
         $startDate = isset($data['schedule_start_date']) && $data['schedule_start_date']
@@ -320,6 +373,9 @@ class JobListingController extends Controller
         return true;
     }
 
+    /**
+     * Handle updateJobStatuses request.
+     */
     public function updateJobStatuses(): void
     {
         JobListing::where('is_active', false)

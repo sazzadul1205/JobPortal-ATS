@@ -14,6 +14,9 @@ use Inertia\Response;
 
 class LocationController extends Controller
 {
+    /**
+     * Handle index request.
+     */
     public function index(Request $request): Response
     {
         $this->authorize('viewAny', Location::class);
@@ -22,11 +25,11 @@ class LocationController extends Controller
             ->when($request->input('search'), fn ($q, $search) => $q->where('name', 'like', "%{$search}%")
             )
             ->when($request->input('status'), function ($q, $status) {
-                if ($status === 'active') {
+                if ((string) $status === 'active') {
                     $q->where('is_active', true);
-                } elseif ($status === 'inactive') {
+                } elseif ((string) $status === 'inactive') {
                     $q->where('is_active', false);
-                } elseif ($status === 'trashed') {
+                } elseif ((string) $status === 'trashed') {
                     $q->onlyTrashed();
                 }
             })
@@ -44,6 +47,9 @@ class LocationController extends Controller
         ]);
     }
 
+    /**
+     * Handle store request.
+     */
     public function store(LocationStoreRequest $request): RedirectResponse
     {
         $this->authorize('create', Location::class);
@@ -58,6 +64,9 @@ class LocationController extends Controller
             ->with('success', 'Location created successfully.');
     }
 
+    /**
+     * Handle update request.
+     */
     public function update(LocationUpdateRequest $request, Location $location): RedirectResponse
     {
         $this->authorize('update', $location);
@@ -72,6 +81,9 @@ class LocationController extends Controller
             ->with('success', 'Location updated successfully.');
     }
 
+    /**
+     * Handle destroy request.
+     */
     public function destroy(Location $location): RedirectResponse
     {
         $this->authorize('delete', $location);
@@ -86,6 +98,9 @@ class LocationController extends Controller
             ->with('success', 'Location deleted successfully.');
     }
 
+    /**
+     * Handle toggleActive request.
+     */
     public function toggleActive(Location $location): RedirectResponse
     {
         $this->authorize('update', $location);
@@ -95,6 +110,9 @@ class LocationController extends Controller
         return back()->with('success', $location->is_active ? 'Location activated.' : 'Location deactivated.');
     }
 
+    /**
+     * Handle restore request.
+     */
     public function restore(string $id): RedirectResponse
     {
         $location = Location::withTrashed()->findOrFail($id);
@@ -106,6 +124,9 @@ class LocationController extends Controller
             ->with('success', 'Location restored successfully.');
     }
 
+    /**
+     * Handle forceDelete request.
+     */
     public function forceDelete(string $id): RedirectResponse
     {
         $location = Location::withTrashed()->findOrFail($id);
@@ -121,6 +142,9 @@ class LocationController extends Controller
             ->with('success', 'Location permanently deleted.');
     }
 
+    /**
+     * Handle getActiveLocations request.
+     */
     public function getActiveLocations(): JsonResponse
     {
         $locations = Location::where('is_active', true)

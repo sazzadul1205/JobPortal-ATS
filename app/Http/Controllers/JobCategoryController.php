@@ -15,6 +15,9 @@ use Inertia\Response;
 
 class JobCategoryController extends Controller
 {
+    /**
+     * Handle index request.
+     */
     public function index(Request $request): Response
     {
         $this->authorize('viewAny', JobCategory::class);
@@ -23,11 +26,11 @@ class JobCategoryController extends Controller
             ->when($request->input('search'), fn ($q, $search) => $q->where('name', 'like', "%{$search}%")
             )
             ->when($request->input('status'), function ($q, $status) {
-                if ($status === 'active') {
+                if ((string) $status === 'active') {
                     $q->where('is_active', true);
-                } elseif ($status === 'inactive') {
+                } elseif ((string) $status === 'inactive') {
                     $q->where('is_active', false);
-                } elseif ($status === 'trashed') {
+                } elseif ((string) $status === 'trashed') {
                     $q->onlyTrashed();
                 }
             })
@@ -45,6 +48,9 @@ class JobCategoryController extends Controller
         ]);
     }
 
+    /**
+     * Handle store request.
+     */
     public function store(JobCategoryStoreRequest $request): RedirectResponse
     {
         $this->authorize('create', JobCategory::class);
@@ -68,6 +74,9 @@ class JobCategoryController extends Controller
             ->with('success', 'Category created successfully.');
     }
 
+    /**
+     * Handle update request.
+     */
     public function update(JobCategoryUpdateRequest $request, JobCategory $category): RedirectResponse
     {
         $this->authorize('update', $category);
@@ -94,6 +103,9 @@ class JobCategoryController extends Controller
             ->with('success', 'Category updated successfully.');
     }
 
+    /**
+     * Handle destroy request.
+     */
     public function destroy(JobCategory $category): RedirectResponse
     {
         $this->authorize('delete', $category);
@@ -108,6 +120,9 @@ class JobCategoryController extends Controller
             ->with('success', 'Category deleted successfully.');
     }
 
+    /**
+     * Handle toggleActive request.
+     */
     public function toggleActive(JobCategory $category): RedirectResponse
     {
         $this->authorize('update', $category);
@@ -117,6 +132,9 @@ class JobCategoryController extends Controller
         return back()->with('success', $category->is_active ? 'Category activated.' : 'Category deactivated.');
     }
 
+    /**
+     * Handle restore request.
+     */
     public function restore(string $id): RedirectResponse
     {
         $category = JobCategory::withTrashed()->findOrFail($id);
@@ -128,6 +146,9 @@ class JobCategoryController extends Controller
             ->with('success', 'Category restored successfully.');
     }
 
+    /**
+     * Handle forceDelete request.
+     */
     public function forceDelete(string $id): RedirectResponse
     {
         $category = JobCategory::withTrashed()->findOrFail($id);
@@ -143,6 +164,9 @@ class JobCategoryController extends Controller
             ->with('success', 'Category permanently deleted.');
     }
 
+    /**
+     * Handle getActiveCategories request.
+     */
     public function getActiveCategories(): JsonResponse
     {
         $categories = JobCategory::where('is_active', true)

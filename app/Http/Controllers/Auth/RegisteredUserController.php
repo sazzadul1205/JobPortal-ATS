@@ -18,6 +18,9 @@ class RegisteredUserController extends Controller
     /**
      * Show the registration page.
      */
+    /**
+     * Handle create request.
+     */
     public function create(): Response
     {
         return Inertia::render('auth/register');
@@ -27,6 +30,9 @@ class RegisteredUserController extends Controller
      * Handle an incoming registration request.
      *
      * @throws \Illuminate\Validation\ValidationException
+     */
+    /**
+     * Handle store request.
      */
     public function store(Request $request): RedirectResponse
     {

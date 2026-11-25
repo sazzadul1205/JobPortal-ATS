@@ -22,11 +22,17 @@ class ApplicationController extends Controller
 {
     protected ATSService $atsService;
 
+    /**
+     * Handle __construct request.
+     */
     public function __construct(ATSService $atsService)
     {
         $this->atsService = $atsService;
     }
 
+    /**
+     * Handle index request.
+     */
     public function index(Request $request): Response
     {
         $user = Auth::user();
@@ -35,19 +41,25 @@ class ApplicationController extends Controller
         if ($user->role === 'job_seeker') {
             $query->where('user_id', $user->id);
         } elseif ($user->role === 'employer') {
-            $query->whereHas('jobListing', fn ($q) => $q->where('user_id', $user->id));
+            $query->whereHas('jobListing', fn($q) => $q->where('user_id', $user->id));
         }
 
-        $query->when($request->input('status'), fn ($q, $status) => $status !== 'all' ? $q->where('status', $status) : $q
+        $query->when(
+            $request->input('status'),
+            fn($q, $status) => $status !== 'all' ? $q->where('status', $status) : $q
         );
 
         if ($user->role === 'employer' || $user->role === 'admin') {
-            $query->when($request->input('min_score'), fn ($q, $score) => $q->whereRaw('JSON_EXTRACT(ats_score, "$.percentage") >= ?', [$score])
+            $query->when(
+                $request->input('min_score'),
+                fn($q, $score) => $q->whereRaw('JSON_EXTRACT(ats_score, "$.percentage") >= ?', [$score])
             );
         }
 
-        $query->when($request->input('search'), fn ($q, $search) => $q->whereHas('user', fn ($uq) => $uq->where('name', 'like', "%{$search}%"))
-            ->orWhereHas('jobListing', fn ($jq) => $jq->where('title', 'like', "%{$search}%"))
+        $query->when(
+            $request->input('search'),
+            fn($q, $search) => $q->whereHas('user', fn($uq) => $uq->where('name', 'like', "%{$search}%"))
+                ->orWhereHas('jobListing', fn($jq) => $jq->where('title', 'like', "%{$search}%"))
         );
 
         $applications = $query->latest()->paginate(15)->withQueryString();
@@ -66,7 +78,7 @@ class ApplicationController extends Controller
         } else {
             $employerQuery = Application::query();
             if ($user->role === 'employer') {
-                $employerQuery->whereHas('jobListing', fn ($q) => $q->where('user_id', $user->id));
+                $employerQuery->whereHas('jobListing', fn($q) => $q->where('user_id', $user->id));
             }
             $statusCounts = [
                 'all' => (clone $employerQuery)->count(),
@@ -86,6 +98,9 @@ class ApplicationController extends Controller
         ]);
     }
 
+    /**
+     * Handle create request.
+     */
     public function create(JobListing $jobListing): Response
     {
         $this->authorize('viewCreate', [Application::class, $jobListing]);
@@ -101,6 +116,9 @@ class ApplicationController extends Controller
         ]);
     }
 
+    /**
+     * Handle store request.
+     */
     public function store(ApplicationStoreRequest $request, JobListing $jobListing): RedirectResponse
     {
         $this->authorize('create', [Application::class, $jobListing]);
@@ -126,6 +144,9 @@ class ApplicationController extends Controller
             ->with('success', 'Application submitted successfully. ATS score is being calculated.');
     }
 
+    /**
+     * Handle show request.
+     */
     public function show(Application $application): Response
     {
         $this->authorize('view', $application);
@@ -138,18 +159,24 @@ class ApplicationController extends Controller
         ]);
     }
 
+    /**
+     * Handle updateStatus request.
+     */
     public function updateStatus(ApplicationStatusUpdateRequest $request, Application $application): RedirectResponse
     {
         $this->authorize('updateStatus', $application);
 
         $application->update([
-            'status' => $request->status,
-            'employer_notes' => $request->employer_notes,
+            'status' => $request->input('status'),
+            'employer_notes' => $request->input('employer_notes'),
         ]);
 
         return back()->with('success', 'Application status updated successfully.');
     }
 
+    /**
+     * Handle bulkUpdateStatus request.
+     */
     public function bulkUpdateStatus(ApplicationBulkStatusUpdateRequest $request): RedirectResponse
     {
         $user = Auth::user();
@@ -160,7 +187,7 @@ class ApplicationController extends Controller
             // Admin can update all
         } elseif ($user->role === 'employer') {
             $allowedCount = Application::whereIn('id', $applicationIds)
-                ->whereHas('jobListing', fn ($q) => $q->where('user_id', $user->id))
+                ->whereHas('jobListing', fn($q) => $q->where('user_id', $user->id))
                 ->count();
             if ($allowedCount !== \count($applicationIds)) {
                 abort(403, 'Unauthorized to update some of the selected applications.');
@@ -172,24 +199,30 @@ class ApplicationController extends Controller
         $query = Application::whereIn('id', $applicationIds);
 
         if ($user->role === 'employer') {
-            $query->whereHas('jobListing', fn ($q) => $q->where('user_id', $user->id));
+            $query->whereHas('jobListing', fn($q) => $q->where('user_id', $user->id));
         }
 
         $updated = $query->update([
-            'status' => $request->status,
-            'employer_notes' => $request->employer_notes,
+            'status' => $request->input('status'),
+            'employer_notes' => $request->input('employer_notes'),
         ]);
 
         return back()->with('success', "{$updated} application(s) updated successfully.");
     }
 
-    public function mergeResumes(Request $request): Response
+    /**
+     * Handle mergeResumes request.
+     */
+    public function mergeResumes(): Response
     {
         $this->authorize('mergeResumes', Application::class);
 
         return Inertia::render('applications/merge-resumes');
     }
 
+    /**
+     * Handle downloadResume request.
+     */
     public function downloadResume(Application $application): RedirectResponse|StreamedResponse
     {
         $this->authorize('downloadResume', $application);
@@ -198,9 +231,15 @@ class ApplicationController extends Controller
             return back()->with('error', 'Resume file not found.');
         }
 
-        return Storage::disk('public')->download($application->resume_path);
+        /** @var \Illuminate\Filesystem\FilesystemAdapter $disk */
+        $disk = Storage::disk('public');
+
+        return $disk->download($application->resume_path);
     }
 
+    /**
+     * Handle destroy request.
+     */
     public function destroy(Application $application): RedirectResponse
     {
         $this->authorize('delete', $application);
@@ -215,6 +254,9 @@ class ApplicationController extends Controller
             ->with('success', 'Application deleted successfully.');
     }
 
+    /**
+     * Handle recalculateScore request.
+     */
     public function recalculateScore(Application $application): RedirectResponse
     {
         $this->authorize('recalculateScore', $application);
@@ -231,6 +273,9 @@ class ApplicationController extends Controller
         return back()->with('success', 'ATS score recalculated successfully.');
     }
 
+    /**
+     * Handle analyticsDashboard request.
+     */
     public function analyticsDashboard(): Response
     {
         $user = Auth::user();
@@ -242,6 +287,9 @@ class ApplicationController extends Controller
         ]);
     }
 
+    /**
+     * Handle jobATSAnalysis request.
+     */
     public function jobATSAnalysis(JobListing $jobListing): Response
     {
         $this->authorize('viewApplications', $jobListing);
@@ -256,6 +304,9 @@ class ApplicationController extends Controller
         ]);
     }
 
+    /**
+     * Handle getATSStats request.
+     */
     public function getATSStats(): JsonResponse
     {
         $user = Auth::user();
