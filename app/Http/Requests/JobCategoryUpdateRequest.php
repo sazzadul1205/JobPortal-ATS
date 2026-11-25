@@ -9,7 +9,7 @@ class JobCategoryUpdateRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user() !== null && \in_array($this->user()->role, ['admin', 'employer']);
+        return $this->user() !== null && ($this->user()->hasRole('admin') || $this->user()->hasRole('employer'));
     }
 
     public function rules(): array

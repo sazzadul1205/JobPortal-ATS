@@ -22,6 +22,7 @@ class JobListingStoreRequest extends FormRequest
             'experience_level' => ['required', Rule::in(['entry', 'junior', 'mid', 'senior', 'lead', 'principal', 'executive', 'intern'])],
             'education_requirement' => ['nullable', Rule::in(['high-school', 'diploma', 'associate', 'bachelor', 'master', 'phd', 'any', 'none'])],
             'application_deadline' => ['required', 'date', 'after_or_equal:today', 'before_or_equal:'.now()->addYear()->format('Y-m-d')],
+            'schedule_start_date' => ['nullable', 'date', 'after_or_equal:today'],
             'description' => ['required', 'string', 'min:50'],
             'requirements' => ['required', 'string', 'min:50'],
             'skills' => ['required', 'array', 'min:1'],

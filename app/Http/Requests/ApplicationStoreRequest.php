@@ -5,13 +5,14 @@ namespace App\Http\Requests;
 use App\Models\Application;
 use App\Models\JobListing;
 use Carbon\Carbon;
+use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 
 class ApplicationStoreRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user() !== null && $this->user()->role === 'job_seeker';
+        return $this->user() !== null && $this->user()->hasRole('job-seeker');
     }
 
     public function rules(): array
@@ -39,7 +40,7 @@ class ApplicationStoreRequest extends FormRequest
         ];
     }
 
-    public function withValidator(\Illuminate\Contracts\Validation\Validator $validator)
+    public function withValidator(Validator $validator)
     {
         $validator->after(function ($validator) {
             $jobListingParam = $this->route('jobListing');

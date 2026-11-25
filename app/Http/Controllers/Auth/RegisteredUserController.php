@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\Role;
 use App\Models\User;
-use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -29,7 +29,7 @@ class RegisteredUserController extends Controller
     /**
      * Handle an incoming registration request.
      *
-     * @throws \Illuminate\Validation\ValidationException
+     * @throws ValidationException
      */
     /**
      * Handle store request.
@@ -40,17 +40,24 @@ class RegisteredUserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|lowercase|email|max:255|unique:'.User::class,
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
-            'role' => 'required|in:employer,job_seeker',
         ]);
 
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'role' => $request->role,
         ]);
 
-        event(new Registered($user));
+        $role = Role::firstOrCreate(['slug' => 'job-seeker'], [
+            'name' => 'Job Seeker',
+            'level' => 20,
+            'description' => 'Job Seeker role',
+            'is_default' => true,
+        ]);
+        $user->roles()->syncWithoutDetaching([$role->id => [
+            'assigned_at' => now(),
+            'is_active' => true,
+        ]]);
 
         Auth::login($user);
 

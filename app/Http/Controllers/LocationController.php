@@ -132,7 +132,7 @@ class LocationController extends Controller
         $location = Location::withTrashed()->findOrFail($id);
         $this->authorize('forceDelete', $location);
 
-        if (JobListing::whereHas('locations', fn ($q) => $q->where('locations.id', $location->id))->exists()) {
+        if (JobListing::whereHas('locations', fn ($q) => $q->withTrashed()->where('locations.id', $location->id))->exists()) {
             return back()->with('error', 'Cannot force delete location with existing job listings.');
         }
 

@@ -9,6 +9,7 @@ use App\Jobs\CalculateAtsScore;
 use App\Models\Application;
 use App\Models\JobListing;
 use App\Services\ATSService;
+use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -38,35 +39,35 @@ class ApplicationController extends Controller
         $user = Auth::user();
         $query = Application::with(['jobListing.category', 'jobListing.locations', 'user', 'applicantProfile']);
 
-        if ($user->role === 'job_seeker') {
+        if ($user->hasRole('job-seeker')) {
             $query->where('user_id', $user->id);
-        } elseif ($user->role === 'employer') {
-            $query->whereHas('jobListing', fn($q) => $q->where('user_id', $user->id));
+        } elseif ($user->hasRole('employer')) {
+            $query->whereHas('jobListing', fn ($q) => $q->where('user_id', $user->id));
         }
 
         $query->when(
             $request->input('status'),
-            fn($q, $status) => $status !== 'all' ? $q->where('status', $status) : $q
+            fn ($q, $status) => $status !== 'all' ? $q->where('status', $status) : $q
         );
 
-        if ($user->role === 'employer' || $user->role === 'admin') {
+        if ($user->hasRole('employer') || $user->hasRole('admin')) {
             $query->when(
                 $request->input('min_score'),
-                fn($q, $score) => $q->whereRaw('JSON_EXTRACT(ats_score, "$.percentage") >= ?', [$score])
+                fn ($q, $score) => $q->whereRaw('JSON_EXTRACT(ats_score, "$.percentage") >= ?', [$score])
             );
         }
 
         $query->when(
             $request->input('search'),
-            fn($q, $search) => $q->whereHas('user', fn($uq) => $uq->where('name', 'like', "%{$search}%"))
-                ->orWhereHas('jobListing', fn($jq) => $jq->where('title', 'like', "%{$search}%"))
+            fn ($q, $search) => $q->whereHas('user', fn ($uq) => $uq->where('name', 'like', "%{$search}%"))
+                ->orWhereHas('jobListing', fn ($jq) => $jq->where('title', 'like', "%{$search}%"))
         );
 
         $applications = $query->latest()->paginate(15)->withQueryString();
 
         $filters = $request->only(['status', 'min_score', 'search']);
 
-        if ($user->role === 'job_seeker') {
+        if ($user->hasRole('job-seeker')) {
             $statusCounts = [
                 'all' => Application::where('user_id', $user->id)->count(),
                 'pending' => Application::where('user_id', $user->id)->where('status', 'pending')->count(),
@@ -77,8 +78,8 @@ class ApplicationController extends Controller
             ];
         } else {
             $employerQuery = Application::query();
-            if ($user->role === 'employer') {
-                $employerQuery->whereHas('jobListing', fn($q) => $q->where('user_id', $user->id));
+            if ($user->hasRole('employer')) {
+                $employerQuery->whereHas('jobListing', fn ($q) => $q->where('user_id', $user->id));
             }
             $statusCounts = [
                 'all' => (clone $employerQuery)->count(),
@@ -94,7 +95,7 @@ class ApplicationController extends Controller
             'applications' => $applications,
             'filters' => $filters,
             'statusCounts' => $statusCounts,
-            'userRole' => $user->role,
+            'userRole' => $user->getPrimaryRole()?->slug ?? 'guest',
         ]);
     }
 
@@ -107,7 +108,7 @@ class ApplicationController extends Controller
 
         $hasApplied = $jobListing->applications()->where('user_id', Auth::id())->exists();
 
-        $jobListing->load(['category', 'location']);
+        $jobListing->load(['category', 'locations']);
 
         return Inertia::render('applications/create', [
             'job' => $jobListing,
@@ -151,11 +152,11 @@ class ApplicationController extends Controller
     {
         $this->authorize('view', $application);
 
-        $application->load(['jobListing.category', 'jobListing.location', 'user', 'applicantProfile']);
+        $application->load(['jobListing.category', 'jobListing.locations', 'user', 'applicantProfile']);
 
         return Inertia::render('applications/show', [
             'application' => $application,
-            'userRole' => Auth::user()->role,
+            'userRole' => Auth::user()?->getPrimaryRole()?->slug ?? 'guest',
         ]);
     }
 
@@ -183,11 +184,11 @@ class ApplicationController extends Controller
         $applicationIds = $request->application_ids;
 
         // Manual authorization check for bulk update
-        if ($user->role === 'admin') {
+        if ($user->hasRole('admin')) {
             // Admin can update all
-        } elseif ($user->role === 'employer') {
+        } elseif ($user->hasRole('employer')) {
             $allowedCount = Application::whereIn('id', $applicationIds)
-                ->whereHas('jobListing', fn($q) => $q->where('user_id', $user->id))
+                ->whereHas('jobListing', fn ($q) => $q->where('user_id', $user->id))
                 ->count();
             if ($allowedCount !== \count($applicationIds)) {
                 abort(403, 'Unauthorized to update some of the selected applications.');
@@ -198,8 +199,8 @@ class ApplicationController extends Controller
 
         $query = Application::whereIn('id', $applicationIds);
 
-        if ($user->role === 'employer') {
-            $query->whereHas('jobListing', fn($q) => $q->where('user_id', $user->id));
+        if ($user->hasRole('employer')) {
+            $query->whereHas('jobListing', fn ($q) => $q->where('user_id', $user->id));
         }
 
         $updated = $query->update([
@@ -231,7 +232,7 @@ class ApplicationController extends Controller
             return back()->with('error', 'Resume file not found.');
         }
 
-        /** @var \Illuminate\Filesystem\FilesystemAdapter $disk */
+        /** @var FilesystemAdapter $disk */
         $disk = Storage::disk('public');
 
         return $disk->download($application->resume_path);
@@ -283,7 +284,7 @@ class ApplicationController extends Controller
 
         return Inertia::render('analytics/dashboard', [
             'stats' => $stats,
-            'userRole' => $user->role,
+            'userRole' => $user->getPrimaryRole()?->slug ?? 'guest',
         ]);
     }
 
@@ -311,7 +312,7 @@ class ApplicationController extends Controller
     {
         $user = Auth::user();
 
-        if ($user->role !== 'employer' && $user->role !== 'admin') {
+        if (! $user->hasRole('employer') && ! $user->hasRole('admin')) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
