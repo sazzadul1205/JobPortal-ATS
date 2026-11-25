@@ -23,7 +23,7 @@ class Permission extends Model
 
     public function scopeActive(Builder $query): Builder
     {
-        return $query->where('is_active', true);
+        return $query->where('permissions.is_active', true);
     }
 
     public function scopeByModule(Builder $query, string $module): Builder

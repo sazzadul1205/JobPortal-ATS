@@ -68,6 +68,11 @@ class JobListing extends Model
         return $this->belongsTo(User::class, 'user_id');
     }
 
+    public function user()
+    {
+        return $this->employer();
+    }
+
     public function category()
     {
         return $this->belongsTo(JobCategory::class, 'category_id');

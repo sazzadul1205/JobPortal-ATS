@@ -20,10 +20,8 @@ class JobListingStoreRequest extends FormRequest
             'location_id' => ['required', 'exists:locations,id'],
             'job_type' => ['required', Rule::in(['full-time', 'part-time', 'contract', 'internship', 'remote', 'hybrid', 'freelance'])],
             'experience_level' => ['required', Rule::in(['entry', 'junior', 'mid', 'senior', 'lead', 'principal', 'executive', 'intern'])],
-            'salary' => ['nullable', 'string', 'max:100'],
             'education_requirement' => ['nullable', Rule::in(['high-school', 'diploma', 'associate', 'bachelor', 'master', 'phd', 'any', 'none'])],
             'application_deadline' => ['required', 'date', 'after_or_equal:today', 'before_or_equal:'.now()->addYear()->format('Y-m-d')],
-            'schedule_start_date' => ['nullable', 'date', 'after_or_equal:today'],
             'description' => ['required', 'string', 'min:50'],
             'requirements' => ['required', 'string', 'min:50'],
             'skills' => ['required', 'array', 'min:1'],
@@ -35,8 +33,6 @@ class JobListingStoreRequest extends FormRequest
             'keywords' => ['nullable', 'array'],
             'keywords.*' => ['string', 'max:100'],
             'is_active' => ['boolean'],
-            'show_linkedin' => ['boolean'],
-            'show_facebook' => ['boolean'],
         ];
     }
 

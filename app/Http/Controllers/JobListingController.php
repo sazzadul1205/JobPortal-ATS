@@ -28,24 +28,24 @@ class JobListingController extends Controller
             ->withTrashed()
             ->when(
                 $request->input('search'),
-                fn($q, $search) => $q->where('title', 'like', "%{$search}%")
+                fn ($q, $search) => $q->where('title', 'like', "%{$search}%")
                     ->orWhere('description', 'like', "%{$search}%")
             )
             ->when(
                 $request->input('category'),
-                fn($q, $category) => $q->where('category_id', $category)
+                fn ($q, $category) => $q->where('category_id', $category)
             )
             ->when(
                 $request->input('location'),
-                fn($q, $location) => $q->whereHas('locations', fn($lq) => $lq->where('locations.id', $location))
+                fn ($q, $location) => $q->whereHas('locations', fn ($lq) => $lq->where('locations.id', $location))
             )
             ->when(
                 $request->input('job_type'),
-                fn($q, $type) => $q->where('job_type', $type)
+                fn ($q, $type) => $q->where('job_type', $type)
             )
             ->when(
                 $request->input('experience_level'),
-                fn($q, $level) => $q->where('experience_level', $level)
+                fn ($q, $level) => $q->where('experience_level', $level)
             )
             ->when($request->input('status'), function ($q, $status) {
                 if ((string) $status === 'active') {
@@ -123,7 +123,6 @@ class JobListingController extends Controller
 
         return redirect()->route('backend.listing.index')
             ->with('success', 'Job listing created successfully.');
-            ->with('success', 'Job listing created successfully.');
     }
 
     /**
@@ -200,7 +199,6 @@ class JobListingController extends Controller
 
         return redirect()->route('backend.listing.index')
             ->with('success', 'Job listing updated successfully.');
-            ->with('success', 'Job listing updated successfully.');
     }
 
     /**
@@ -260,25 +258,25 @@ class JobListingController extends Controller
             ->where('application_deadline', '>=', now())
             ->when(
                 $request->input('search'),
-                fn($q, $search) => $q->where('title', 'like', "%{$search}%")
+                fn ($q, $search) => $q->where('title', 'like', "%{$search}%")
                     ->orWhere('description', 'like', "%{$search}%")
-                    ->orWhereHas('locations', fn($lq) => $lq->where('name', 'like', "%{$search}%"))
+                    ->orWhereHas('locations', fn ($lq) => $lq->where('name', 'like', "%{$search}%"))
             )
             ->when(
                 $request->input('category'),
-                fn($q, $category) => $q->where('category_id', $category)
+                fn ($q, $category) => $q->where('category_id', $category)
             )
             ->when(
                 $request->input('location'),
-                fn($q, $location) => $q->whereHas('locations', fn($lq) => $lq->where('locations.id', $location))
+                fn ($q, $location) => $q->whereHas('locations', fn ($lq) => $lq->where('locations.id', $location))
             )
             ->when(
                 $request->input('job_type'),
-                fn($q, $type) => $q->where('job_type', $type)
+                fn ($q, $type) => $q->where('job_type', $type)
             )
             ->when(
                 $request->input('experience_level'),
-                fn($q, $level) => $q->where('experience_level', $level)
+                fn ($q, $level) => $q->where('experience_level', $level)
             )
             ->latest();
 
@@ -325,10 +323,10 @@ class JobListingController extends Controller
         $counter = 1;
 
         while (JobListing::where('slug', $slug)
-            ->when($excludeId, fn($q) => $q->where('id', '!=', $excludeId))
+            ->when($excludeId, fn ($q) => $q->where('id', '!=', $excludeId))
             ->exists()
         ) {
-            $slug = $baseSlug . '-' . $counter;
+            $slug = $baseSlug.'-'.$counter;
             $counter++;
         }
 
