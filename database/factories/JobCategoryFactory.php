@@ -43,9 +43,11 @@ class JobCategoryFactory extends Factory
             'Non-Profit & Social Services',
         ]);
 
+        $slug = Str::slug($name).'-'.fake()->unique()->numberBetween(1000, 9999);
+
         return [
             'name' => $name,
-            'slug' => Str::slug($name),
+            'slug' => $slug,
             'is_active' => true,
         ];
     }

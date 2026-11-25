@@ -57,6 +57,16 @@ class Application extends Model
         return $this->belongsTo(User::class, 'user_id');
     }
 
+    public function user()
+    {
+        return $this->applicant();
+    }
+
+    public function applicantProfile()
+    {
+        return $this->hasOne(ApplicantProfile::class, 'user_id', 'user_id');
+    }
+
     public function isPending(): bool
     {
         return $this->status === 'pending';

@@ -2,7 +2,9 @@
 
 namespace Database\Factories;
 
+use App\Models\JobCategory;
 use App\Models\JobListing;
+use App\Models\Location;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
@@ -124,6 +126,8 @@ class JobListingFactory extends Factory
             'schedule_start_date' => $scheduleStart ? $scheduleStart->format('Y-m-d') : null,
             'is_active' => true,
             'user_id' => User::factory()->employer(),
+            'location_id' => fn () => Location::inRandomOrder()->first()?->id ?? Location::factory(),
+            'category_id' => fn () => JobCategory::inRandomOrder()->first()?->id ?? JobCategory::factory(),
             'show_linkedin' => fake()->boolean(20),
             'show_facebook' => fake()->boolean(15),
         ];
