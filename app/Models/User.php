@@ -67,14 +67,4 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->hasManyThrough(Application::class, JobListing::class, 'user_id', 'job_listing_id');
     }
-
-    public function notifications()
-    {
-        return $this->morphMany(Notification::class, 'notifiable')->latest();
-    }
-
-    public function unreadNotifications()
-    {
-        return $this->notifications()->whereNull('read_at');
-    }
 }

@@ -11,22 +11,21 @@ use Illuminate\Database\Eloquent\Factories\Factory;
  */
 class ApplicantProfileFactory extends Factory
 {
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
     public function definition(): array
     {
         return [
-            'user_id' => User::factory()->jobSeeker(),
+            'user_id' => User::factory(),
             'first_name' => fake()->firstName(),
             'last_name' => fake()->lastName(),
             'birth_date' => fake()->optional(0.7)->dateTimeBetween('-50 years', '-18 years')?->format('Y-m-d'),
-            'email' => fake()->unique()->safeEmail(),
+            'gender' => fake()->optional(0.7)->randomElement(['male', 'female', 'other']),
+            'blood_type' => fake()->optional(0.5)->randomElement(['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']),
             'phone' => fake()->optional(0.8)->phoneNumber(),
+            'address' => fake()->optional(0.7)->address(),
             'photo_path' => fake()->optional(0.3)->imageUrl(400, 400, 'people'),
-            'cv_path' => fake()->optional(0.6)->url(),
+            'social_links' => fake()->optional(0.4)->json(),
+            'experience_years' => fake()->optional(0.7)->numberBetween(0, 20),
+            'current_job_title' => fake()->optional(0.7)->jobTitle(),
         ];
     }
 }

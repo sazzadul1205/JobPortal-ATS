@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -20,6 +21,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property array|null $social_links
  * @property int|null $experience_years
  * @property string|null $current_job_title
+ * @property string $full_name
  */
 class ApplicantProfile extends Model
 {
@@ -73,5 +75,43 @@ class ApplicantProfile extends Model
     public function applications()
     {
         return $this->hasMany(Application::class);
+    }
+
+    /** Required fields for "complete": first_name, last_name, phone. */
+    public function isComplete(): bool
+    {
+        return ! blank($this->first_name)
+            && ! blank($this->last_name)
+            && ! blank($this->phone);
+    }
+
+    /** Completion percentage across 7 fields. */
+    public function completionPercentage(): int
+    {
+        $fields = [
+            'first_name', 'last_name', 'phone', 'birth_date', 'gender',
+            'experience_years', 'current_job_title',
+        ];
+
+        $filled = 0;
+        foreach ($fields as $field) {
+            if (! blank($this->{$field})) {
+                $filled++;
+            }
+        }
+
+        return (int) round(($filled / \count($fields)) * 100);
+    }
+
+    public function getFullNameAttribute(): string
+    {
+        return trim("{$this->first_name} {$this->last_name}");
+    }
+
+    public function scopeComplete(Builder $query): Builder
+    {
+        return $query->whereNotNull('first_name')
+            ->whereNotNull('last_name')
+            ->whereNotNull('phone');
     }
 }

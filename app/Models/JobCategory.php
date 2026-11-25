@@ -11,24 +11,24 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property string $name
  * @property string $slug
  * @property bool $is_active
+ * @property int $job_count
  */
 class JobCategory extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $fillable = [
-        'name',
-        'slug',
-        'is_active',
-    ];
+    protected $fillable = ['name', 'slug', 'is_active'];
 
-    protected $casts = [
-        'is_active' => 'boolean',
-    ];
+    protected $casts = ['is_active' => 'boolean'];
 
     public function jobListings()
     {
         return $this->hasMany(JobListing::class, 'category_id');
+    }
+
+    public function activeJobListings()
+    {
+        return $this->jobListings()->active();
     }
 
     public function scopeActive(Builder $query): Builder
@@ -36,8 +36,8 @@ class JobCategory extends Model
         return $query->where('is_active', true);
     }
 
-    public function scopeWhereSlug(Builder $query, string $slug): Builder
+    public function getJobCountAttribute(): int
     {
-        return $query->where('slug', $slug);
+        return $this->jobListings()->active()->count();
     }
 }

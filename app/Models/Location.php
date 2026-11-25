@@ -11,24 +11,20 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property string $name
  * @property string|null $address
  * @property bool $is_active
+ * @property string $formatted_address
  */
 class Location extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $fillable = [
-        'name',
-        'address',
-        'is_active',
-    ];
+    protected $fillable = ['name', 'address', 'is_active'];
 
-    protected $casts = [
-        'is_active' => 'boolean',
-    ];
+    protected $casts = ['is_active' => 'boolean'];
 
+    /** @return BelongsToMany<int, JobListing> */
     public function jobListings()
     {
-        return $this->hasMany(JobListing::class);
+        return $this->belongsToMany(JobListing::class, 'job_listing_location')->withTimestamps();
     }
 
     public function scopeActive(Builder $query): Builder

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -25,5 +26,10 @@ class EducationHistory extends Model
     public function applicantProfile()
     {
         return $this->belongsTo(ApplicantProfile::class);
+    }
+
+    public function scopeLatestFirst(Builder $query): Builder
+    {
+        return $query->orderByDesc('passing_year');
     }
 }

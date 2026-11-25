@@ -17,7 +17,6 @@ class StatusTimeline extends Model
 
     protected $fillable = ['application_id', 'status', 'notes'];
 
-    /** Belongs to an application. */
     public function application()
     {
         return $this->belongsTo(Application::class);

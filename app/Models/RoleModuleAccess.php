@@ -24,4 +24,22 @@ class RoleModuleAccess extends Model
     public const ACCESS_MANAGE = 'manage';
 
     protected $fillable = ['role_id', 'module', 'access_level'];
+
+    /** Check if the access level is at least the given level. */
+    public function isAtLeast(string $level): bool
+    {
+        $hierarchy = [
+            self::ACCESS_NO_ACCESS => 0,
+            self::ACCESS_READ => 1,
+            self::ACCESS_WRITE => 2,
+            self::ACCESS_MANAGE => 3,
+        ];
+
+        return ($hierarchy[$this->access_level] ?? 0) >= ($hierarchy[$level] ?? 0);
+    }
+
+    public function role()
+    {
+        return $this->belongsTo(Role::class);
+    }
 }

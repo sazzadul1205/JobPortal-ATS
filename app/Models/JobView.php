@@ -17,15 +17,23 @@ class JobView extends Model
 
     protected $fillable = ['job_listing_id', 'user_id', 'ip_address'];
 
-    /** Belongs to a job listing. */
     public function jobListing()
     {
         return $this->belongsTo(JobListing::class);
     }
 
-    /** Belongs to a user. */
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    /** Record a job view. */
+    public static function recordView(int $jobId, ?int $userId, ?string $ip): void
+    {
+        self::create([
+            'job_listing_id' => $jobId,
+            'user_id' => $userId,
+            'ip_address' => $ip,
+        ]);
     }
 }
