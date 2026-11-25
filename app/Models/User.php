@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
+use App\Traits\HasRoles;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 
 /**
  * @property int $id
@@ -14,11 +17,13 @@ use Illuminate\Notifications\Notifiable;
  * @property string|null $password
  * @property string|null $google_id
  * @property string|null $google_avatar
- * @property string|null $role
+ * @property string|null $email_verified_at
+ * @property array $roles_list
+ * @property array $permissions_list
  */
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmail
 {
-    use HasFactory, Notifiable, SoftDeletes;
+    use HasFactory, HasRoles, Notifiable, SoftDeletes;
 
     protected $fillable = [
         'name',
@@ -36,6 +41,8 @@ class User extends Authenticatable
         'password' => 'hashed',
     ];
 
+    protected $appends = ['roles_list', 'permissions_list'];
+
     public function applicantProfile()
     {
         return $this->hasOne(ApplicantProfile::class);
@@ -51,8 +58,23 @@ class User extends Authenticatable
         return $this->hasMany(Application::class);
     }
 
-    public function roles()
+    public function jobViews()
     {
-        return $this->belongsToMany(Role::class, 'user_roles');
+        return $this->hasMany(JobView::class);
+    }
+
+    public function receivedApplications(): HasManyThrough
+    {
+        return $this->hasManyThrough(Application::class, JobListing::class, 'user_id', 'job_listing_id');
+    }
+
+    public function notifications()
+    {
+        return $this->morphMany(Notification::class, 'notifiable')->latest();
+    }
+
+    public function unreadNotifications()
+    {
+        return $this->notifications()->whereNull('read_at');
     }
 }
