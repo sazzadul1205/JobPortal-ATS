@@ -20,6 +20,7 @@ const navItemsByRole: Record<string, NavItem[]> = {
         { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
         { label: 'Browse Jobs', href: '/jobs', icon: Briefcase },
         { label: 'My Applications', href: '/applications', icon: FileText },
+        { label: 'My Profile', href: '/profile', icon: Users },
         { label: 'Settings', href: '/settings', icon: Settings },
     ],
     employer: [
@@ -29,6 +30,7 @@ const navItemsByRole: Record<string, NavItem[]> = {
         { label: 'Locations', href: '/backend/locations', icon: Users },
         { label: 'Applications', href: '/backend/application', icon: FileText },
         { label: 'Analytics', href: '/backend/analytics/dashboard', icon: TrendingUp },
+        { label: 'My Profile', href: '/profile', icon: Users },
         { label: 'Settings', href: '/settings', icon: Settings },
     ],
     admin: [
@@ -36,12 +38,13 @@ const navItemsByRole: Record<string, NavItem[]> = {
         { label: 'Manage Jobs', href: '/backend/listing', icon: Briefcase },
         { label: 'All Applications', href: '/backend/application', icon: FileText },
         { label: 'Users', href: '/users', icon: Users },
+        { label: 'My Profile', href: '/profile', icon: Users },
         { label: 'Settings', href: '/settings', icon: Settings },
     ],
 };
 
 export default function AppLayout({ children, breadcrumbs: propsBreadcrumbs = [] }: AppLayoutProps) {
-    const { url, props } = usePage<{ auth?: { user?: { name: string; email: string } } }>();
+    const { url, props } = usePage<{ auth?: { user?: { name: string; email: string; role: string } } }>();
     const [mobileOpen, setMobileOpen] = useState(false);
     const userName = props.auth?.user?.name ?? 'Account';
     const role = props.auth?.user?.role ?? 'job_seeker';
@@ -113,6 +116,7 @@ export default function AppLayout({ children, breadcrumbs: propsBreadcrumbs = []
                         <div className="min-w-0">
                             <p className="text-sidebar-foreground truncate text-sm font-medium">{userName}</p>
                             <p className="text-muted-foreground truncate text-xs">{props.auth?.user?.email ?? ''}</p>
+                            <p className="text-muted-foreground truncate text-xs capitalize">{props.auth?.user?.role ?? ''}</p>
                         </div>
                     </div>
                     <button

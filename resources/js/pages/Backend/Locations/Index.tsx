@@ -12,15 +12,15 @@ interface LocationsIndexProps {
 }
 
 export default function Index({ locations }: LocationsIndexProps) {
-    const list = Array.isArray(locations) ? locations : locations?.data ?? [];
+    const list = Array.isArray(locations) ? locations : (locations?.data ?? []);
     return (
         <AppLayout>
             <Head title="Locations" />
-            <div className="mx-auto max-w-7xl px-4 py-8">
+            <div className="mx-auto">
                 <h1 className="mb-6 text-2xl font-bold text-slate-900">Locations</h1>
                 <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
                     <table className="w-full text-sm">
-                        <thead className="border-b border-slate-200 text-left text-xs uppercase text-slate-500">
+                        <thead className="border-b border-slate-200 text-left text-xs text-slate-500 uppercase">
                             <tr>
                                 <th className="px-5 py-3 font-medium">Name</th>
                                 <th className="px-5 py-3 font-medium">Status</th>
@@ -40,4 +40,3 @@ export default function Index({ locations }: LocationsIndexProps) {
         </AppLayout>
     );
 }
-

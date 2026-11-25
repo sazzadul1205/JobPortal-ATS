@@ -83,6 +83,20 @@ Route::middleware(['auth'])->group(function () {
         Route::get('analytics/ats-stats', [ApplicationController::class, 'getATSStats'])->name('analytics.ats-stats');
     });
 
+    Route::get('/users', function () {
+        $user = auth()->user();
+        $data = [
+            'admins' => User::where('role', 'admin')->get(['id', 'name', 'email', 'role']),
+            'employers' => User::where('role', 'employer')->get(['id', 'name', 'email', 'role']),
+        ];
+        if ($user && $user->role === 'super_admin') {
+            $data['superAdmins'] = User::where('role', 'super_admin')->get(['id', 'name', 'email', 'role']);
+        } else {
+            $data['superAdmins'] = [];
+        }
+        return Inertia::render('users/index', $data);
+    })->name('users.index');
+    Route::get('/profile', fn () => Inertia::render('profile/index'))->name('profile.index');
     Route::get('/settings', fn () => Inertia::render('settings/index'))->name('settings.index');
     // Settings routes
     Route::prefix('settings')->name('settings.')->group(function () {

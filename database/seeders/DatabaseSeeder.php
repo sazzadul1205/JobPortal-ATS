@@ -32,6 +32,7 @@ class DatabaseSeeder extends Seeder
         // 3. Create Users
         $this->command->info('Creating users...');
         $admin = $this->createAdmin();
+        $superAdmin = $this->createSuperAdmin();
         $employers = $this->createEmployers(10);
         $jobSeekers = $this->createJobSeekers(50);
 
@@ -131,8 +132,20 @@ class DatabaseSeeder extends Seeder
     }
 
     /**
-     * Create admin user.
+     * Create super admin user.
      */
+    private function createSuperAdmin(): User
+    {
+        return User::firstOrCreate(
+            ['email' => 'superadmin@jobportal.com'],
+            [
+                'name' => 'Super Admin',
+                'password' => Hash::make('password123'),
+                'role' => 'super_admin',
+                'email_verified_at' => now(),
+            ]
+        );
+    }
     private function createAdmin(): User
     {
         return User::firstOrCreate(
