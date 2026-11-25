@@ -10,44 +10,23 @@ return new class extends Migration
     {
         Schema::table('job_listings', function (Blueprint $table) {
             $table->dropForeign(['location_id']);
-            $table->dropIndex('location_id');
+            $table->dropIndex('job_listings_location_id_index');
+            $table->dropIndex('job_listings_schedule_start_date_index');
             $table->dropColumn(['location_id', 'salary', 'schedule_start_date', 'show_linkedin', 'show_facebook']);
-            $table->string('job_type')->change();
-            $table->decimal('salary_min', 10, 2)->nullable()->after('job_type');
-            $table->decimal('salary_max', 10, 2)->nullable()->after('salary_min');
-            $table->boolean('is_salary_negotiable')->default(false)->after('salary_max');
-            $table->boolean('as_per_companies_policy')->default(false)->after('is_salary_negotiable');
-            $table->string('experience_level')->change();
-            $table->string('education_requirement')->nullable()->change();
-            $table->string('education_details')->nullable()->after('education_requirement');
-            $table->json('benefits')->nullable()->change();
-            $table->json('skills')->nullable()->change();
-            $table->json('responsibilities')->nullable()->change();
-            $table->json('keywords')->nullable()->change();
-            $table->date('application_deadline')->change();
-            $table->date('publish_at')->nullable()->after('application_deadline');
-            $table->unsignedInteger('views_count')->default(0)->after('publish_at');
-            $table->boolean('is_active')->default(true)->change();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete()->change();
-            $table->boolean('required_facebook_link')->default(false)->after('user_id');
-            $table->boolean('required_linkedin_link')->default(false)->after('required_facebook_link');
-        });
-
-        Schema::create('job_listing_location', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('job_listing_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('location_id')->constrained()->cascadeOnDelete();
-            $table->timestamps();
-            $table->unique(['job_listing_id', 'location_id']);
-            $table->index('job_listing_id');
-            $table->index('location_id');
+            $table->decimal('salary_min', 10, 2)->nullable();
+            $table->decimal('salary_max', 10, 2)->nullable();
+            $table->boolean('is_salary_negotiable')->default(false);
+            $table->boolean('as_per_companies_policy')->default(false);
+            $table->string('education_details')->nullable();
+            $table->date('publish_at')->nullable();
+            $table->unsignedInteger('views_count')->default(0);
+            $table->boolean('required_facebook_link')->default(false);
+            $table->boolean('required_linkedin_link')->default(false);
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('job_listing_location');
-
         Schema::table('job_listings', function (Blueprint $table) {
             $table->dropColumn(['salary_min', 'salary_max', 'is_salary_negotiable', 'as_per_companies_policy', 'education_details', 'publish_at', 'views_count', 'required_facebook_link', 'required_linkedin_link']);
             $table->foreignId('location_id')->constrained()->cascadeOnDelete();

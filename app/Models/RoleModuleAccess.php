@@ -15,6 +15,8 @@ class RoleModuleAccess extends Model
 {
     use HasFactory;
 
+    protected $table = 'role_module_access';
+
     public const ACCESS_NO_ACCESS = 'no_access';
 
     public const ACCESS_READ = 'read';

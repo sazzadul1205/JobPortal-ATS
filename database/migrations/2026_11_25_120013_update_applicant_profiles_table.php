@@ -9,6 +9,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('applicant_profiles', function (Blueprint $table) {
+            $table->dropIndex('applicant_profiles_email_index');
             $table->dropColumn(['email', 'cv_path']);
             $table->string('gender')->nullable()->after('birth_date');
             $table->string('blood_type')->nullable()->after('gender');

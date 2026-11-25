@@ -8,104 +8,85 @@ use App\Models\JobCategory;
 use App\Models\JobListing;
 use App\Models\Location;
 use App\Models\User;
+use Database\Seeders\RBAC\RBACSeeder;
+use Database\Seeders\RBAC\UserRolesSeeder;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
 class DatabaseSeeder extends Seeder
 {
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
         $this->command->info('Starting database seeding...');
 
-        // 1. Create Job Categories (22 categories)
+        // 1. Seed RBAC (roles, permissions, module access)
+        $this->command->info('Seeding RBAC...');
+        $this->call(RBACSeeder::class);
+
+        // 2. Create Job Categories (22 categories)
         $this->command->info('Creating job categories...');
         $categories = $this->createJobCategories();
 
-        // 2. Create Locations (9 Bangladesh divisions + All Over Bangladesh)
+        // 3. Create Locations (9 Bangladesh divisions + All Over Bangladesh)
         $this->command->info('Creating locations...');
         $locations = $this->createLocations();
 
-        // 3. Create Users
+        // 4. Create Users and assign roles via RBAC
         $this->command->info('Creating users...');
-        $admin = $this->createAdmin();
         $superAdmin = $this->createSuperAdmin();
+        $admin = $this->createAdmin();
         $employers = $this->createEmployers(10);
         $jobSeekers = $this->createJobSeekers(50);
 
-        // 4. Create Applicant Profiles for job seekers
+        // 5. Create Applicant Profiles for job seekers
         $this->command->info('Creating applicant profiles...');
         $applicantProfiles = $this->createApplicantProfiles($jobSeekers);
 
-        // 5. Create Job Listings
+        // 6. Create Job Listings
         $this->command->info('Creating job listings...');
         $jobListings = $this->createJobListings($employers, $categories, $locations, 100);
 
-        // 6. Create Applications
+        // 7. Create Applications
         $this->command->info('Creating applications...');
         $this->createApplications($jobSeekers, $jobListings, $applicantProfiles, 300);
+
+        // 8. Assign user roles via UserRolesSeeder
+        $this->command->info('Assigning user roles...');
+        $this->call(UserRolesSeeder::class);
 
         $this->command->info('Database seeding completed successfully!');
         $this->command->info('Summary:');
         $this->command->info('  - Job Categories: '.JobCategory::count());
         $this->command->info('  - Locations: '.Location::count());
-        $this->command->info('  - Users: '.User::count().' (1 admin, 10 employers, 50 job seekers)');
+        $this->command->info('  - Users: '.User::count());
         $this->command->info('  - Applicant Profiles: '.ApplicantProfile::count());
         $this->command->info('  - Job Listings: '.JobListing::count());
         $this->command->info('  - Applications: '.Application::count());
     }
 
-    /**
-     * Create job categories.
-     */
     private function createJobCategories(): array
     {
         $categoryNames = [
-            'Information Technology',
-            'Engineering',
-            'Healthcare',
-            'Finance & Accounting',
-            'Sales & Marketing',
-            'Human Resources',
-            'Administration',
-            'Education & Training',
-            'Customer Service',
-            'Manufacturing',
-            'Construction',
-            'Logistics & Transportation',
-            'Retail',
-            'Hospitality & Tourism',
-            'Media & Communications',
-            'Legal',
-            'Real Estate',
-            'Agriculture',
-            'Telecommunications',
-            'Automotive',
-            'Energy & Utilities',
-            'Non-Profit & Social Services',
+            'Information Technology', 'Engineering', 'Healthcare', 'Finance & Accounting',
+            'Sales & Marketing', 'Human Resources', 'Administration', 'Education & Training',
+            'Customer Service', 'Manufacturing', 'Construction', 'Logistics & Transportation',
+            'Retail', 'Hospitality & Tourism', 'Media & Communications', 'Legal',
+            'Real Estate', 'Agriculture', 'Telecommunications', 'Automotive',
+            'Energy & Utilities', 'Non-Profit & Social Services',
         ];
 
         $categories = [];
         foreach ($categoryNames as $name) {
             $categories[] = JobCategory::firstOrCreate(
                 ['slug' => Str::slug($name)],
-                [
-                    'name' => $name,
-                    'slug' => Str::slug($name),
-                    'is_active' => true,
-                ]
+                ['name' => $name, 'slug' => Str::slug($name), 'is_active' => true]
             );
         }
 
         return $categories;
     }
 
-    /**
-     * Create locations.
-     */
     private function createLocations(): array
     {
         $locationData = [
@@ -131,9 +112,6 @@ class DatabaseSeeder extends Seeder
         return $locations;
     }
 
-    /**
-     * Create super admin user.
-     */
     private function createSuperAdmin(): User
     {
         return User::firstOrCreate(
@@ -141,11 +119,11 @@ class DatabaseSeeder extends Seeder
             [
                 'name' => 'Super Admin',
                 'password' => Hash::make('password123'),
-                'role' => 'super_admin',
                 'email_verified_at' => now(),
             ]
         );
     }
+
     private function createAdmin(): User
     {
         return User::firstOrCreate(
@@ -153,20 +131,15 @@ class DatabaseSeeder extends Seeder
             [
                 'name' => 'System Admin',
                 'password' => Hash::make('password123'),
-                'role' => 'admin',
                 'email_verified_at' => now(),
             ]
         );
     }
 
-    /**
-     * Create employer users.
-     */
     private function createEmployers(int $count): array
     {
         $employers = [];
 
-        // Create specific seeded employers
         $seededEmployers = [
             ['name' => 'TechCorp Solutions', 'email' => 'hr@techcorp.com'],
             ['name' => 'DataSoft Systems', 'email' => 'careers@datasoft.com'],
@@ -181,15 +154,13 @@ class DatabaseSeeder extends Seeder
                 [
                     'name' => $emp['name'],
                     'password' => Hash::make('password123'),
-                    'role' => 'employer',
                     'email_verified_at' => now(),
                 ]
             );
         }
 
-        // Create additional random employers
         for ($i = count($seededEmployers); $i < $count; $i++) {
-            $employers[] = User::factory()->employer()->create([
+            $employers[] = User::factory()->create([
                 'email_verified_at' => now(),
             ]);
         }
@@ -197,14 +168,10 @@ class DatabaseSeeder extends Seeder
         return $employers;
     }
 
-    /**
-     * Create job seeker users.
-     */
     private function createJobSeekers(int $count): array
     {
         $jobSeekers = [];
 
-        // Create specific seeded job seekers
         $seededSeekers = [
             ['name' => 'Rahim Ahmed', 'email' => 'rahim.ahmed@email.com'],
             ['name' => 'Fatima Begum', 'email' => 'fatima.begum@email.com'],
@@ -219,15 +186,13 @@ class DatabaseSeeder extends Seeder
                 [
                     'name' => $seeker['name'],
                     'password' => Hash::make('password123'),
-                    'role' => 'job_seeker',
                     'email_verified_at' => now(),
                 ]
             );
         }
 
-        // Create additional random job seekers
         for ($i = count($seededSeekers); $i < $count; $i++) {
-            $jobSeekers[] = User::factory()->jobSeeker()->create([
+            $jobSeekers[] = User::factory()->create([
                 'email_verified_at' => now(),
             ]);
         }
@@ -235,126 +200,86 @@ class DatabaseSeeder extends Seeder
         return $jobSeekers;
     }
 
-    /**
-     * Create applicant profiles for job seekers.
-     */
     private function createApplicantProfiles(array $jobSeekers): array
     {
         $profiles = [];
 
         foreach ($jobSeekers as $seeker) {
-            // 80% of job seekers have profiles
             if (fake()->boolean(80)) {
-                $profiles[] = ApplicantProfile::factory()->create([
-                    'user_id' => $seeker->id,
-                    'email' => $seeker->email,
-                ]);
+                $profiles[] = ApplicantProfile::factory()->create(['user_id' => $seeker->id]);
             }
         }
 
         return $profiles;
     }
 
-    /**
-     * Create job listings.
-     */
     private function createJobListings(array $employers, array $categories, array $locations, int $count): array
     {
         $jobListings = [];
 
-        // Create specific featured job listings
         $featuredJobs = [
-            [
-                'title' => 'Senior Full Stack Developer',
-                'job_type' => 'full-time',
-                'experience_level' => 'senior',
-                'salary' => 'BDT 180,000 - 250,000',
-            ],
-            [
-                'title' => 'Frontend Developer (React/Vue)',
-                'job_type' => 'full-time',
-                'experience_level' => 'mid',
-                'salary' => 'BDT 120,000 - 180,000',
-            ],
-            [
-                'title' => 'Backend Engineer (Node.js/Go)',
-                'job_type' => 'full-time',
-                'experience_level' => 'senior',
-                'salary' => 'BDT 200,000 - 300,000',
-            ],
-            [
-                'title' => 'DevOps Engineer',
-                'job_type' => 'full-time',
-                'experience_level' => 'mid',
-                'salary' => 'BDT 150,000 - 220,000',
-            ],
-            [
-                'title' => 'Mobile App Developer (Flutter)',
-                'job_type' => 'full-time',
-                'experience_level' => 'mid',
-                'salary' => 'BDT 100,000 - 150,000',
-            ],
+            ['title' => 'Senior Full Stack Developer', 'job_type' => 'full-time', 'experience_level' => 'senior', 'salary_min' => 180000, 'salary_max' => 250000],
+            ['title' => 'Frontend Developer (React/Vue)', 'job_type' => 'full-time', 'experience_level' => 'mid', 'salary_min' => 120000, 'salary_max' => 180000],
+            ['title' => 'Backend Engineer (Node.js/Go)', 'job_type' => 'full-time', 'experience_level' => 'senior', 'salary_min' => 200000, 'salary_max' => 300000],
+            ['title' => 'DevOps Engineer', 'job_type' => 'full-time', 'experience_level' => 'mid', 'salary_min' => 150000, 'salary_max' => 220000],
+            ['title' => 'Mobile App Developer (Flutter)', 'job_type' => 'full-time', 'experience_level' => 'mid', 'salary_min' => 100000, 'salary_max' => 150000],
         ];
 
         foreach ($featuredJobs as $index => $job) {
-            $jobListings[] = JobListing::factory()->create(array_merge($job, [
+            $listing = JobListing::factory()->create(array_merge($job, [
                 'user_id' => $employers[$index % count($employers)]->id,
-                'category_id' => $categories[0]->id, // IT category
-                'location_id' => $locations[1]->id, // Dhaka
+                'category_id' => $categories[0]->id,
                 'is_active' => true,
-                'schedule_start_date' => null,
             ]));
+            $listing->locations()->attach([$locations[1]->id]);
+            $jobListings[] = $listing;
         }
 
-        // Create remaining random job listings
         for ($i = count($featuredJobs); $i < $count; $i++) {
-            $jobListings[] = JobListing::factory()->create([
+            $listing = JobListing::factory()->create([
                 'user_id' => fake()->randomElement($employers)->id,
                 'category_id' => fake()->randomElement($categories)->id,
-                'location_id' => fake()->randomElement($locations)->id,
             ]);
+            $listing->locations()->attach([fake()->randomElement($locations)->id]);
+            $jobListings[] = $listing;
         }
 
-        // Add some inactive/expired/scheduled listings
         for ($i = 0; $i < 10; $i++) {
-            $jobListings[] = JobListing::factory()->inactive()->create([
+            $listing = JobListing::factory()->inactive()->create([
                 'user_id' => fake()->randomElement($employers)->id,
                 'category_id' => fake()->randomElement($categories)->id,
-                'location_id' => fake()->randomElement($locations)->id,
             ]);
+            $listing->locations()->attach([fake()->randomElement($locations)->id]);
+            $jobListings[] = $listing;
         }
 
         for ($i = 0; $i < 5; $i++) {
-            $jobListings[] = JobListing::factory()->expired()->create([
+            $listing = JobListing::factory()->expired()->create([
                 'user_id' => fake()->randomElement($employers)->id,
                 'category_id' => fake()->randomElement($categories)->id,
-                'location_id' => fake()->randomElement($locations)->id,
             ]);
+            $listing->locations()->attach([fake()->randomElement($locations)->id]);
+            $jobListings[] = $listing;
         }
 
         for ($i = 0; $i < 5; $i++) {
-            $jobListings[] = JobListing::factory()->scheduled()->create([
+            $listing = JobListing::factory()->scheduled()->create([
                 'user_id' => fake()->randomElement($employers)->id,
                 'category_id' => fake()->randomElement($categories)->id,
-                'location_id' => fake()->randomElement($locations)->id,
             ]);
+            $listing->locations()->attach([fake()->randomElement($locations)->id]);
+            $jobListings[] = $listing;
         }
 
         return $jobListings;
     }
 
-    /**
-     * Create applications.
-     */
     private function createApplications(array $jobSeekers, array $jobListings, array $applicantProfiles, int $count): void
     {
         $activeListings = array_filter($jobListings, fn ($j) => $j->is_active && $j->application_deadline >= now());
 
-        // Create applications for active job listings
         foreach ($activeListings as $listing) {
-            // Each listing gets 1-8 applications
             $applicationCount = fake()->numberBetween(1, 8);
-
             $availableSeekers = $jobSeekers;
             shuffle($availableSeekers);
 
@@ -362,7 +287,6 @@ class DatabaseSeeder extends Seeder
                 $seeker = $availableSeekers[$i];
                 $profile = collect($applicantProfiles)->firstWhere('user_id', $seeker->id);
 
-                // Check if application already exists
                 $exists = Application::where('job_listing_id', $listing->id)
                     ->where('user_id', $seeker->id)
                     ->exists();
@@ -379,16 +303,9 @@ class DatabaseSeeder extends Seeder
             }
         }
 
-        // Create additional applications with specific states
         $states = [
-            'pending' => 50,
-            'reviewed' => 30,
-            'shortlisted' => 20,
-            'rejected' => 15,
-            'hired' => 10,
-            'withAtsScore' => 40,
-            'highAtsScore' => 15,
-            'lowAtsScore' => 10,
+            'pending' => 50, 'shortlisted' => 20, 'rejected' => 15, 'hired' => 10,
+            'withAtsScore' => 40, 'highAtsScore' => 15, 'lowAtsScore' => 10,
         ];
 
         foreach ($states as $state => $stateCount) {
@@ -397,7 +314,6 @@ class DatabaseSeeder extends Seeder
                 $seeker = fake()->randomElement($jobSeekers);
                 $profile = collect($applicantProfiles)->firstWhere('user_id', $seeker->id);
 
-                // Check if application already exists
                 $exists = Application::where('job_listing_id', $listing->id)
                     ->where('user_id', $seeker->id)
                     ->exists();
