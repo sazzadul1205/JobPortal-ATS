@@ -3,83 +3,44 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
 /**
  * @property int $id
- * @property string $role
+ * @property string $name
+ * @property string $email
+ * @property string|null $password
+ * @property string|null $google_id
+ * @property string|null $google_avatar
+ * @property string|null $role
  */
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, SoftDeletes;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
     protected $fillable = [
         'name',
         'email',
         'password',
-        'role',
+        'google_id',
+        'google_avatar',
+        'email_verified_at',
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
-     */
-    protected $hidden = [
-        'password',
-        'remember_token',
+    protected $hidden = ['password', 'remember_token'];
+
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'password' => 'hashed',
     ];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
-    protected function casts(): array
+    public function applicantProfile()
     {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
+        return $this->hasOne(ApplicantProfile::class);
     }
 
-    /**
-     * Role helper methods
-     */
-    public function isAdmin(): bool
-    {
-        return $this->role === 'admin';
-    }
-
-    public function isEmployer(): bool
-    {
-        return $this->role === 'employer';
-    }
-
-    public function isJobSeeker(): bool
-    {
-        return $this->role === 'job_seeker';
-    }
-
-    public function hasRole(string $role): bool
-    {
-        return $this->role === $role;
-    }
-
-    public function hasAnyRole(array $roles): bool
-    {
-        return \in_array($this->role, $roles);
-    }
-
-    /**
-     * Relationships
-     */
     public function jobListings()
     {
         return $this->hasMany(JobListing::class);
@@ -90,8 +51,8 @@ class User extends Authenticatable
         return $this->hasMany(Application::class);
     }
 
-    public function applicantProfile()
+    public function roles()
     {
-        return $this->hasOne(ApplicantProfile::class);
+        return $this->belongsToMany(Role::class, 'user_roles');
     }
 }

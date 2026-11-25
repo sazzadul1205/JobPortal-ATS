@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Carbon;
 
 /**
  * @property string $title
@@ -22,7 +23,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property array|null $skills
  * @property array|null $responsibilities
  * @property array|null $keywords
- * @property \Illuminate\Support\Carbon|null $application_deadline
+ * @property Carbon|null $application_deadline
  * @property string|null $schedule_start_date
  * @property bool $is_active
  * @property int $user_id
@@ -78,9 +79,19 @@ class JobListing extends Model
         return $this->belongsTo(JobCategory::class, 'category_id');
     }
 
-    public function user()
+    public function employer()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function locations()
+    {
+        return $this->belongsToMany(Location::class, 'job_listing_location');
+    }
+
+    public function views()
+    {
+        return $this->hasMany(JobView::class);
     }
 
     public function applications()

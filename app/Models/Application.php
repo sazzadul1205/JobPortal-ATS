@@ -47,9 +47,14 @@ class Application extends Model
         'expected_salary' => 'decimal:2',
     ];
 
-    public function jobListing()
+    public function applicantProfile()
     {
-        return $this->belongsTo(JobListing::class);
+        return $this->belongsTo(ApplicantProfile::class);
+    }
+
+    public function statusTimelines()
+    {
+        return $this->hasMany(StatusTimeline::class);
     }
 
     public function applicant()
@@ -60,11 +65,6 @@ class Application extends Model
     public function user()
     {
         return $this->applicant();
-    }
-
-    public function applicantProfile()
-    {
-        return $this->hasOne(ApplicantProfile::class, 'user_id', 'user_id');
     }
 
     public function isPending(): bool
