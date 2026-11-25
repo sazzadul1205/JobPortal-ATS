@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Models\Application;
 use App\Models\JobListing;
+use Carbon\Carbon;
 use Illuminate\Foundation\Http\FormRequest;
 
 class ApplicationStoreRequest extends FormRequest
@@ -55,7 +56,7 @@ class ApplicationStoreRequest extends FormRequest
                 $validator->errors()->add('job_listing', 'This job is no longer accepting applications.');
             }
 
-            if ($jobListing->application_deadline && $jobListing->application_deadline->isPast()) {
+            if ($jobListing->application_deadline && Carbon::parse($jobListing->application_deadline)->lt(now()->startOfDay())) {
                 $validator->errors()->add('job_listing', 'The application deadline has passed.');
             }
 

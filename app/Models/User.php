@@ -7,6 +7,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
 /**
+ * @property int $id
  * @property string $role
  */
 class User extends Authenticatable
@@ -73,7 +74,7 @@ class User extends Authenticatable
 
     public function hasAnyRole(array $roles): bool
     {
-        return in_array($this->role, $roles);
+        return \in_array($this->role, $roles);
     }
 
     /**

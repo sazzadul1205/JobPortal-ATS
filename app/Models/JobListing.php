@@ -22,7 +22,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property array|null $skills
  * @property array|null $responsibilities
  * @property array|null $keywords
- * @property string $application_deadline
+ * @property \Illuminate\Support\Carbon|null $application_deadline
  * @property string|null $schedule_start_date
  * @property bool $is_active
  * @property int $user_id

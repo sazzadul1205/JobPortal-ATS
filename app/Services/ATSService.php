@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Application;
 use App\Models\JobListing;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use PhpOffice\PhpWord\IOFactory as WordIOFactory;
 use Smalot\PdfParser\Parser as PdfParser;
@@ -12,7 +13,197 @@ use Smalot\PdfParser\Parser as PdfParser;
 class ATSService
 {
     protected array $stopWords = [
-        'the', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by', 'from', 'as', 'is', 'are', 'was', 'were', 'be', 'been', 'being', 'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could', 'should', 'may', 'might', 'must', 'can', 'a', 'an', 'this', 'that', 'these', 'those', 'i', 'you', 'he', 'she', 'it', 'we', 'they', 'my', 'your', 'his', 'her', 'its', 'our', 'their', 'me', 'him', 'us', 'them', 'what', 'which', 'who', 'whom', 'whose', 'where', 'when', 'why', 'how', 'all', 'each', 'every', 'both', 'few', 'more', 'most', 'other', 'some', 'such', 'no', 'nor', 'not', 'only', 'own', 'same', 'so', 'than', 'too', 'very', 'just', 'now', 'then', 'here', 'there', 'also', 'back', 'after', 'before', 'over', 'under', 'again', 'further', 'once', 'out', 'up', 'down', 'off', 'on', 'above', 'below', 'between', 'into', 'through', 'during', 'before', 'after', 'above', 'below', 'to', 'from', 'up', 'down', 'in', 'out', 'on', 'off', 'over', 'under', 'again', 'further', 'then', 'once', 'here', 'there', 'when', 'where', 'why', 'how', 'all', 'any', 'both', 'each', 'few', 'more', 'most', 'other', 'some', 'such', 'no', 'nor', 'not', 'only', 'own', 'same', 'so', 'than', 'too', 'very', 's', 't', 'can', 'will', 'just', 'don', 'should', 'now', 'd', 'll', 'm', 'o', 're', 've', 'y', 'ain', 'aren', 'couldn', 'didn', 'doesn', 'hadn', 'hasn', 'haven', 'isn', 'ma', 'mightn', 'mustn', 'needn', 'shan', 'shouldn', 'wasn', 'weren', 'won', 'wouldn',
+        'the',
+        'and',
+        'or',
+        'but',
+        'in',
+        'on',
+        'at',
+        'to',
+        'for',
+        'of',
+        'with',
+        'by',
+        'from',
+        'as',
+        'is',
+        'are',
+        'was',
+        'were',
+        'be',
+        'been',
+        'being',
+        'have',
+        'has',
+        'had',
+        'do',
+        'does',
+        'did',
+        'will',
+        'would',
+        'could',
+        'should',
+        'may',
+        'might',
+        'must',
+        'can',
+        'a',
+        'an',
+        'this',
+        'that',
+        'these',
+        'those',
+        'i',
+        'you',
+        'he',
+        'she',
+        'it',
+        'we',
+        'they',
+        'my',
+        'your',
+        'his',
+        'her',
+        'its',
+        'our',
+        'their',
+        'me',
+        'him',
+        'us',
+        'them',
+        'what',
+        'which',
+        'who',
+        'whom',
+        'whose',
+        'where',
+        'when',
+        'why',
+        'how',
+        'all',
+        'each',
+        'every',
+        'both',
+        'few',
+        'more',
+        'most',
+        'other',
+        'some',
+        'such',
+        'no',
+        'nor',
+        'not',
+        'only',
+        'own',
+        'same',
+        'so',
+        'than',
+        'too',
+        'very',
+        'just',
+        'now',
+        'then',
+        'here',
+        'there',
+        'also',
+        'back',
+        'after',
+        'before',
+        'over',
+        'under',
+        'again',
+        'further',
+        'once',
+        'out',
+        'up',
+        'down',
+        'off',
+        'on',
+        'above',
+        'below',
+        'between',
+        'into',
+        'through',
+        'during',
+        'before',
+        'after',
+        'above',
+        'below',
+        'to',
+        'from',
+        'up',
+        'down',
+        'in',
+        'out',
+        'on',
+        'off',
+        'over',
+        'under',
+        'again',
+        'further',
+        'then',
+        'once',
+        'here',
+        'there',
+        'when',
+        'where',
+        'why',
+        'how',
+        'all',
+        'any',
+        'both',
+        'each',
+        'few',
+        'more',
+        'most',
+        'other',
+        'some',
+        'such',
+        'no',
+        'nor',
+        'not',
+        'only',
+        'own',
+        'same',
+        'so',
+        'than',
+        'too',
+        'very',
+        's',
+        't',
+        'can',
+        'will',
+        'just',
+        'don',
+        'should',
+        'now',
+        'd',
+        'll',
+        'm',
+        'o',
+        're',
+        've',
+        'y',
+        'ain',
+        'aren',
+        'couldn',
+        'didn',
+        'doesn',
+        'hadn',
+        'hasn',
+        'haven',
+        'isn',
+        'ma',
+        'mightn',
+        'mustn',
+        'needn',
+        'shan',
+        'shouldn',
+        'wasn',
+        'weren',
+        'won',
+        'wouldn',
     ];
 
     public function calculateScore(Application $application, JobListing $jobListing): array
@@ -25,18 +216,14 @@ class ATSService
 
         $jobKeywords = $this->extractJobKeywords($jobListing);
         $matchedKeywords = [];
-        $missingKeywords = [];
-
         foreach ($jobKeywords as $keyword) {
             if (stripos($resumeText, $keyword) !== false) {
                 $matchedKeywords[] = $keyword;
-            } else {
-                $missingKeywords[] = $keyword;
             }
         }
 
-        $totalKeywords = count($jobKeywords);
-        $matchedCount = count($matchedKeywords);
+        $totalKeywords = \count($jobKeywords);
+        $matchedCount = \count($matchedKeywords);
         $percentage = $totalKeywords > 0 ? round(($matchedCount / $totalKeywords) * 100) : 0;
 
         $extractedSkills = $this->extractSkills($resumeText, $jobKeywords);
@@ -63,7 +250,7 @@ class ATSService
             return '';
         }
 
-        $filePath = storage_path('app/public/'.$application->resume_path);
+        $filePath = storage_path('app/public/' . $application->resume_path);
 
         if (! file_exists($filePath)) {
             return '';
@@ -102,7 +289,7 @@ class ATSService
         foreach ($phpWord->getSections() as $section) {
             foreach ($section->getElements() as $element) {
                 if (method_exists($element, 'getText')) {
-                    $text .= $element->getText().' ';
+                    $text .= $element->getText() . ' ';
                 }
             }
         }
@@ -136,7 +323,7 @@ class ATSService
             $keywords = array_merge($keywords, $this->extractKeywordsFromText($jobListing->requirements));
         }
 
-        return array_values(array_unique(array_filter($keywords, fn ($k) => strlen($k) > 2)));
+        return array_values(array_unique(array_filter($keywords, fn($k) => strlen($k) > 2)));
     }
 
     protected function extractKeywordsFromText(string $text): array
@@ -148,7 +335,7 @@ class ATSService
 
         $keywords = [];
         foreach ($words as $word) {
-            if (strlen($word) >= 3 && ! in_array($word, $this->stopWords)) {
+            if (strlen($word) >= 3 && ! \in_array($word, $this->stopWords)) {
                 $keywords[] = $word;
             }
         }
@@ -156,22 +343,105 @@ class ATSService
         $frequency = array_count_values($keywords);
         arsort($frequency);
 
-        return array_keys(array_slice($frequency, 0, 30, true));
+        return array_keys(\array_slice($frequency, 0, 30, true));
     }
 
     protected function extractSkills(string $resumeText, array $jobKeywords): array
     {
         $commonSkills = [
-            'javascript', 'typescript', 'react', 'vue', 'angular', 'node.js', 'nodejs', 'express', 'next.js', 'nextjs',
-            'php', 'laravel', 'symfony', 'python', 'django', 'flask', 'fastapi', 'java', 'spring', 'spring boot',
-            'c#', '.net', 'asp.net', 'go', 'golang', 'rust', 'ruby', 'rails', 'swift', 'kotlin', 'flutter', 'dart',
-            'react native', 'expo', 'html', 'css', 'scss', 'sass', 'tailwind', 'bootstrap', 'webpack', 'vite',
-            'postgresql', 'mysql', 'mongodb', 'redis', 'elasticsearch', 'sqlite', 'oracle', 'sql server',
-            'docker', 'kubernetes', 'aws', 'azure', 'gcp', 'google cloud', 'terraform', 'ansible', 'jenkins',
-            'git', 'github', 'gitlab', 'bitbucket', 'ci/cd', 'github actions', 'gitlab ci', 'circleci',
-            'graphql', 'rest api', 'restful', 'microservices', 'system design', 'design patterns', 'solid',
-            'agile', 'scrum', 'kanban', 'jira', 'confluence', 'testing', 'jest', 'phpunit', 'pytest', 'cypress',
-            'linux', 'bash', 'shell', 'nginx', 'apache', 'message queues', 'rabbitmq', 'kafka', 'redis',
+            'javascript',
+            'typescript',
+            'react',
+            'vue',
+            'angular',
+            'node.js',
+            'nodejs',
+            'express',
+            'next.js',
+            'nextjs',
+            'php',
+            'laravel',
+            'symfony',
+            'python',
+            'django',
+            'flask',
+            'fastapi',
+            'java',
+            'spring',
+            'spring boot',
+            'c#',
+            '.net',
+            'asp.net',
+            'go',
+            'golang',
+            'rust',
+            'ruby',
+            'rails',
+            'swift',
+            'kotlin',
+            'flutter',
+            'dart',
+            'react native',
+            'expo',
+            'html',
+            'css',
+            'scss',
+            'sass',
+            'tailwind',
+            'bootstrap',
+            'webpack',
+            'vite',
+            'postgresql',
+            'mysql',
+            'mongodb',
+            'redis',
+            'elasticsearch',
+            'sqlite',
+            'oracle',
+            'sql server',
+            'docker',
+            'kubernetes',
+            'aws',
+            'azure',
+            'gcp',
+            'google cloud',
+            'terraform',
+            'ansible',
+            'jenkins',
+            'git',
+            'github',
+            'gitlab',
+            'bitbucket',
+            'ci/cd',
+            'github actions',
+            'gitlab ci',
+            'circleci',
+            'graphql',
+            'rest api',
+            'restful',
+            'microservices',
+            'system design',
+            'design patterns',
+            'solid',
+            'agile',
+            'scrum',
+            'kanban',
+            'jira',
+            'confluence',
+            'testing',
+            'jest',
+            'phpunit',
+            'pytest',
+            'cypress',
+            'linux',
+            'bash',
+            'shell',
+            'nginx',
+            'apache',
+            'message queues',
+            'rabbitmq',
+            'kafka',
+            'redis',
         ];
 
         $resumeLower = strtolower($resumeText);
@@ -184,7 +454,7 @@ class ATSService
         }
 
         foreach ($jobKeywords as $keyword) {
-            if (stripos($resumeLower, strtolower($keyword)) !== false && ! in_array(strtolower($keyword), array_map('strtolower', $foundSkills))) {
+            if (stripos($resumeLower, strtolower($keyword)) !== false && ! \in_array(strtolower($keyword), array_map('strtolower', $foundSkills))) {
                 $foundSkills[] = $keyword;
             }
         }
@@ -213,7 +483,7 @@ class ATSService
         if ($maxYears === 0) {
             $datePattern = '/(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\s+\d{4}\s*[-–]\s*(?:present|current|(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\s+\d{4})/i';
             if (preg_match_all($datePattern, $resumeText, $matches)) {
-                $maxYears = count($matches[0]);
+                $maxYears = \count($matches[0]);
             }
         }
 
@@ -272,8 +542,8 @@ class ATSService
             'message' => $messages[$level] ?? $messages['Needs Improvement'],
             'matched_count' => $matchedCount,
             'missing_count' => $totalKeywords - $matchedCount,
-            'top_matched' => array_slice($extractedSkills, 0, 5),
-            'critical_missing' => array_slice(array_diff($jobListing->skills ?? [], $extractedSkills), 0, 5),
+            'top_matched' => \array_slice($extractedSkills, 0, 5),
+            'critical_missing' => \array_slice(array_diff($jobListing->skills ?? [], $extractedSkills), 0, 5),
             'experience_match' => $expMatch,
             'education_match' => $eduMatch,
             'required_experience' => $requiredExp,
@@ -351,7 +621,7 @@ class ATSService
 
         arsort($skillCounts);
 
-        return array_slice($skillCounts, 0, 20, true);
+        return \array_slice($skillCounts, 0, 20, true);
     }
 
     public function getKeywordAnalysisData(JobListing $jobListing): array
@@ -370,7 +640,7 @@ class ATSService
         foreach ($jobKeywords as $keyword) {
             $matched = 0;
             foreach ($applications as $application) {
-                if ($application->matched_keywords && in_array($keyword, $application->matched_keywords)) {
+                if ($application->matched_keywords && \in_array($keyword, $application->matched_keywords)) {
                     $matched++;
                 }
             }
@@ -381,7 +651,7 @@ class ATSService
             ];
         }
 
-        usort($keywordStats, fn ($a, $b) => $b['match_percentage'] <=> $a['match_percentage']);
+        usort($keywordStats, fn($a, $b) => $b['match_percentage'] <=> $a['match_percentage']);
 
         return $keywordStats;
     }
@@ -406,30 +676,31 @@ class ATSService
             ->toArray();
     }
 
+    /** @var \App\Models\User $user */
     public function getATSStatsData(): array
     {
-        $user = auth()->user();
+        $user = Auth::user();
         $query = Application::query();
 
         if ($user->role === 'employer') {
-            $query->whereHas('jobListing', fn ($q) => $q->where('user_id', $user->id));
+            $query->whereHas('jobListing', fn($q) => $q->where('user_id', (int) $user->id));
         }
 
         $applications = $query->whereNotNull('ats_score')->get();
 
         $totalApplications = $applications->count();
         $averageScore = $totalApplications > 0
-            ? round($applications->avg(fn ($a) => $a->ats_score['percentage'] ?? 0))
+            ? round($applications->avg(fn($a) => $a->ats_score['percentage'] ?? 0))
             : 0;
 
         $distribution = [
-            'Excellent (80-100)' => $applications->filter(fn ($a) => ($a->ats_score['percentage'] ?? 0) >= 80)->count(),
-            'Good (60-79)' => $applications->filter(fn ($a) => ($a->ats_score['percentage'] ?? 0) >= 60 && ($a->ats_score['percentage'] ?? 0) < 80)->count(),
-            'Fair (40-59)' => $applications->filter(fn ($a) => ($a->ats_score['percentage'] ?? 0) >= 40 && ($a->ats_score['percentage'] ?? 0) < 60)->count(),
-            'Poor (0-39)' => $applications->filter(fn ($a) => ($a->ats_score['percentage'] ?? 0) < 40)->count(),
+            'Excellent (80-100)' => $applications->filter(fn($a) => ($a->ats_score['percentage'] ?? 0) >= 80)->count(),
+            'Good (60-79)' => $applications->filter(fn($a) => ($a->ats_score['percentage'] ?? 0) >= 60 && ($a->ats_score['percentage'] ?? 0) < 80)->count(),
+            'Fair (40-59)' => $applications->filter(fn($a) => ($a->ats_score['percentage'] ?? 0) >= 40 && ($a->ats_score['percentage'] ?? 0) < 60)->count(),
+            'Poor (0-39)' => $applications->filter(fn($a) => ($a->ats_score['percentage'] ?? 0) < 40)->count(),
         ];
 
-        $statusBreakdown = $applications->groupBy('status')->map->count()->toArray();
+        $statusBreakdown = $applications->groupBy('status')->map(fn($g) => $g->count())->toArray();
 
         $topSkills = $this->getTopSkillsFromApplications($applications);
 

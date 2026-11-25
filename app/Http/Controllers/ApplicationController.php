@@ -162,7 +162,7 @@ class ApplicationController extends Controller
             $allowedCount = Application::whereIn('id', $applicationIds)
                 ->whereHas('jobListing', fn ($q) => $q->where('user_id', $user->id))
                 ->count();
-            if ($allowedCount !== count($applicationIds)) {
+            if ($allowedCount !== \count($applicationIds)) {
                 abort(403, 'Unauthorized to update some of the selected applications.');
             }
         } else {

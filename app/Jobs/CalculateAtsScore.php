@@ -43,12 +43,12 @@ class CalculateAtsScore implements ShouldQueue
 
         $application->update([
             'ats_score' => $score,
-            'matched_keywords' => $this->extractMatchedKeywords($score, $application->jobListing),
-            'missing_keywords' => $this->extractMissingKeywords($score, $application->jobListing),
+            'matched_keywords' => $this->extractMatchedKeywords($score),
+            'missing_keywords' => $this->extractMissingKeywords($score),
         ]);
     }
 
-    protected function extractMatchedKeywords(array $score, $jobListing): array
+    protected function extractMatchedKeywords(array $score): array
     {
         if (! isset($score['analysis_details']['top_matched'])) {
             return [];
@@ -57,7 +57,7 @@ class CalculateAtsScore implements ShouldQueue
         return $score['analysis_details']['top_matched'];
     }
 
-    protected function extractMissingKeywords(array $score, $jobListing): array
+    protected function extractMissingKeywords(array $score): array
     {
         if (! isset($score['analysis_details']['critical_missing'])) {
             return [];
