@@ -3,12 +3,12 @@
 namespace App\Models;
 
 use App\Traits\HasRoles;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Contracts\Auth\MustVerifyEmail;
 
 /**
  * @property int $id
@@ -20,6 +20,15 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
  * @property string|null $email_verified_at
  * @property array $roles_list
  * @property array $permissions_list
+ *
+ * @method \App\Models\Role|null getPrimaryRole()
+ * @method bool hasRole(string|array $roles)
+ * @method \Illuminate\Support\Collection getAllPermissions()
+ * @method bool hasPermission(string $permission)
+ * @method string getModuleAccess(string $module)
+ * @method bool canAccess(string $module, string $level)
+ *
+ * @mixin HasRoles
  */
 class User extends Authenticatable implements MustVerifyEmail
 {

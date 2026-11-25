@@ -5,9 +5,11 @@ namespace App\Http\Controllers;
 use App\Http\Requests\JobListingStoreRequest;
 use App\Http\Requests\JobListingUpdateRequest;
 use App\Models\JobListing;
+use App\Models\User;
 use App\Services\JobListingService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -67,10 +69,13 @@ class JobListingController extends Controller
 
         $jobListing->load(['category', 'locations', 'user']);
 
+        /** @var User|null $authUser */
+        $authUser = Auth::user();
+
         return Inertia::render('Backend/JobListings/Show', [
             'jobListing' => $jobListing,
             'auth' => [
-                'user' => auth()->user(),
+                'user' => $authUser,
             ],
             'applicationsCount' => $jobListing->applications()->count(),
         ]);
@@ -142,7 +147,9 @@ class JobListingController extends Controller
             'search', 'category', 'location', 'job_type', 'experience_level',
         ]));
 
-        $data['userRole'] = auth()->user()?->getPrimaryRole()?->slug ?? 'guest';
+        /** @var User|null $authUser */
+        $authUser = Auth::user();
+        $data['userRole'] = $authUser?->getPrimaryRole()?->slug ?? 'guest';
 
         return Inertia::render('jobs/index', $data);
     }
@@ -151,13 +158,16 @@ class JobListingController extends Controller
     {
         $jobListing->load(['category', 'locations', 'user']);
 
-        $data = $this->jobListingService->getPublicShowData($jobListing, auth()->id());
+        $data = $this->jobListingService->getPublicShowData($jobListing, Auth::id());
+
+        /** @var User|null $authUser */
+        $authUser = Auth::user();
 
         return Inertia::render('jobs/show', [
             'job' => $jobListing,
             'hasApplied' => $data['hasApplied'],
             'canApply' => $data['canApply'],
-            'userRole' => auth()->user()?->getPrimaryRole()?->slug ?? 'guest',
+            'userRole' => $authUser?->getPrimaryRole()?->slug ?? 'guest',
         ]);
     }
 

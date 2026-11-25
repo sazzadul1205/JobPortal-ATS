@@ -8,6 +8,7 @@ use App\Http\Requests\ApplicationStoreRequest;
 use App\Jobs\CalculateAtsScore;
 use App\Models\Application;
 use App\Models\JobListing;
+use App\Models\User;
 use App\Services\ApplicationService;
 use App\Services\ATSService;
 use Illuminate\Http\JsonResponse;
@@ -75,9 +76,12 @@ class ApplicationController extends Controller
 
         $application->load(['jobListing.category', 'jobListing.locations', 'user', 'applicantProfile']);
 
+        /** @var User $user */
+        $user = Auth::user();
+
         return Inertia::render('applications/show', [
             'application' => $application,
-            'userRole' => Auth::user()?->getPrimaryRole()?->slug ?? 'guest',
+            'userRole' => $user?->getPrimaryRole()?->slug ?? 'guest',
         ]);
     }
 
@@ -92,6 +96,7 @@ class ApplicationController extends Controller
 
     public function bulkUpdateStatus(ApplicationBulkStatusUpdateRequest $request): RedirectResponse
     {
+        /** @var User $user */
         $user = Auth::user();
         $updated = $this->applicationService->bulkUpdateStatus(
             $request->application_ids,
@@ -143,6 +148,7 @@ class ApplicationController extends Controller
 
     public function analyticsDashboard(): Response
     {
+        /** @var User $user */
         $user = Auth::user();
         $stats = $this->applicationService->getATSStatsData($this->atsService);
 
@@ -168,6 +174,7 @@ class ApplicationController extends Controller
 
     public function getATSStats(): JsonResponse
     {
+        /** @var User $user */
         $user = Auth::user();
 
         if (! $user->hasRole('employer') && ! $user->hasRole('admin')) {
