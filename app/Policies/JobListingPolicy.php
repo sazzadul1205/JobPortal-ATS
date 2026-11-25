@@ -12,7 +12,7 @@ class JobListingPolicy
      */
     public function viewAny(User $user): bool
     {
-        return \in_array($user->role, ['admin', 'employer']);
+        return $user->hasRole('admin') || $user->hasRole('employer');
     }
 
     /**
@@ -20,8 +20,8 @@ class JobListingPolicy
      */
     public function view(User $user, JobListing $jobListing): bool
     {
-        return \in_array($user->role, ['admin', 'employer']) &&
-            ($user->role === 'admin' || $jobListing->user_id === $user->id);
+        return ($user->hasRole('admin') || $user->hasRole('employer'))
+            && ($user->hasRole('admin') || $jobListing->user_id === $user->id);
     }
 
     /**
@@ -29,7 +29,7 @@ class JobListingPolicy
      */
     public function create(User $user): bool
     {
-        return \in_array($user->role, ['admin', 'employer']);
+        return $user->hasRole('admin') || $user->hasRole('employer');
     }
 
     /**
@@ -37,8 +37,8 @@ class JobListingPolicy
      */
     public function update(User $user, JobListing $jobListing): bool
     {
-        return \in_array($user->role, ['admin', 'employer']) &&
-            ($user->role === 'admin' || $jobListing->user_id === $user->id);
+        return ($user->hasRole('admin') || $user->hasRole('employer'))
+            && ($user->hasRole('admin') || $jobListing->user_id === $user->id);
     }
 
     /**
@@ -46,8 +46,8 @@ class JobListingPolicy
      */
     public function delete(User $user, JobListing $jobListing): bool
     {
-        return \in_array($user->role, ['admin', 'employer']) &&
-            ($user->role === 'admin' || $jobListing->user_id === $user->id);
+        return ($user->hasRole('admin') || $user->hasRole('employer'))
+            && ($user->hasRole('admin') || $jobListing->user_id === $user->id);
     }
 
     /**
@@ -55,7 +55,7 @@ class JobListingPolicy
      */
     public function viewApplications(User $user, JobListing $jobListing): bool
     {
-        return \in_array($user->role, ['admin', 'employer']) &&
-            ($user->role === 'admin' || $jobListing->user_id === $user->id);
+        return ($user->hasRole('admin') || $user->hasRole('employer'))
+            && ($user->hasRole('admin') || $jobListing->user_id === $user->id);
     }
 }

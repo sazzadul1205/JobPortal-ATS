@@ -23,7 +23,7 @@ class ApplicantProfileFactory extends Factory
             'phone' => fake()->optional(0.8)->phoneNumber(),
             'address' => fake()->optional(0.7)->address(),
             'photo_path' => fake()->optional(0.3)->imageUrl(400, 400, 'people'),
-            'social_links' => fake()->optional(0.4)->json(),
+            'social_links' => fake()->optional(0.4)->randomElement([null, json_encode(['linkedin' => fake()->url(), 'twitter' => fake()->url()])]),
             'experience_years' => fake()->optional(0.7)->numberBetween(0, 20),
             'current_job_title' => fake()->optional(0.7)->jobTitle(),
         ];

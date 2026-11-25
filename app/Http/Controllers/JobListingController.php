@@ -24,7 +24,7 @@ class JobListingController extends Controller
     {
         $this->authorize('viewAny', JobListing::class);
 
-        $query = JobListing::with(['category', 'location', 'user'])
+        $query = JobListing::with(['category', 'locations', 'user'])
             ->withTrashed()
             ->when(
                 $request->input('search'),
@@ -37,7 +37,7 @@ class JobListingController extends Controller
             )
             ->when(
                 $request->input('location'),
-                fn($q, $location) => $q->where('location_id', $location)
+                fn($q, $location) => $q->whereHas('locations', fn($lq) => $lq->where('locations.id', $location))
             )
             ->when(
                 $request->input('job_type'),
@@ -107,8 +107,6 @@ class JobListingController extends Controller
             'description' => $validated['description'],
             'requirements' => $validated['requirements'],
             'category_id' => $validated['category_id'],
-            'location_id' => $validated['location_id'],
-            'salary' => $validated['salary'] ?? null,
             'job_type' => $validated['job_type'],
             'experience_level' => $validated['experience_level'],
             'education_requirement' => $validated['education_requirement'] ?? null,
@@ -117,14 +115,14 @@ class JobListingController extends Controller
             'responsibilities' => $validated['responsibilities'] ?? [],
             'keywords' => $validated['keywords'] ?? [],
             'application_deadline' => $validated['application_deadline'],
-            'schedule_start_date' => $validated['schedule_start_date'] ?? null,
             'is_active' => $this->determineInitialStatus($validated),
             'user_id' => Auth::id(),
-            'show_linkedin' => $validated['show_linkedin'] ?? false,
-            'show_facebook' => $validated['show_facebook'] ?? false,
         ]);
 
+        $jobListing->locations()->attach($validated['location_id']);
+
         return redirect()->route('backend.listing.index')
+            ->with('success', 'Job listing created successfully.');
             ->with('success', 'Job listing created successfully.');
     }
 
@@ -135,7 +133,7 @@ class JobListingController extends Controller
     {
         $this->authorize('view', $jobListing);
 
-        $jobListing->load(['category', 'location', 'user']);
+        $jobListing->load(['category', 'locations', 'user']);
 
         return Inertia::render('Backend/JobListings/Show', [
             'jobListing' => $jobListing,
@@ -153,7 +151,7 @@ class JobListingController extends Controller
     {
         $this->authorize('update', $jobListing);
 
-        $jobListing->load(['category', 'location']);
+        $jobListing->load(['category', 'locations']);
 
         return Inertia::render('Backend/JobListings/Edit', [
             'jobListing' => $jobListing,
@@ -187,8 +185,6 @@ class JobListingController extends Controller
             'description' => $validated['description'],
             'requirements' => $validated['requirements'],
             'category_id' => $validated['category_id'],
-            'location_id' => $validated['location_id'],
-            'salary' => $validated['salary'] ?? null,
             'job_type' => $validated['job_type'],
             'experience_level' => $validated['experience_level'],
             'education_requirement' => $validated['education_requirement'] ?? null,
@@ -197,13 +193,13 @@ class JobListingController extends Controller
             'responsibilities' => $validated['responsibilities'] ?? [],
             'keywords' => $validated['keywords'] ?? [],
             'application_deadline' => $validated['application_deadline'],
-            'schedule_start_date' => $validated['schedule_start_date'] ?? null,
             'is_active' => $isActive,
-            'show_linkedin' => $validated['show_linkedin'] ?? false,
-            'show_facebook' => $validated['show_facebook'] ?? false,
         ]);
 
+        $jobListing->locations()->sync($validated['location_id']);
+
         return redirect()->route('backend.listing.index')
+            ->with('success', 'Job listing updated successfully.');
             ->with('success', 'Job listing updated successfully.');
     }
 
@@ -259,14 +255,14 @@ class JobListingController extends Controller
      */
     public function publicIndex(Request $request): Response
     {
-        $query = JobListing::with(['category', 'location', 'user'])
+        $query = JobListing::with(['category', 'locations', 'user'])
             ->where('is_active', true)
             ->where('application_deadline', '>=', now())
             ->when(
                 $request->input('search'),
                 fn($q, $search) => $q->where('title', 'like', "%{$search}%")
                     ->orWhere('description', 'like', "%{$search}%")
-                    ->orWhereHas('location', fn($lq) => $lq->where('name', 'like', "%{$search}%"))
+                    ->orWhereHas('locations', fn($lq) => $lq->where('name', 'like', "%{$search}%"))
             )
             ->when(
                 $request->input('category'),
@@ -274,7 +270,7 @@ class JobListingController extends Controller
             )
             ->when(
                 $request->input('location'),
-                fn($q, $location) => $q->where('location_id', $location)
+                fn($q, $location) => $q->whereHas('locations', fn($lq) => $lq->where('locations.id', $location))
             )
             ->when(
                 $request->input('job_type'),
@@ -295,7 +291,7 @@ class JobListingController extends Controller
             'locations' => Location::where('is_active', true)->get(['id', 'name']),
             'jobTypes' => ['full-time', 'part-time', 'contract', 'internship', 'remote', 'hybrid', 'freelance'],
             'experienceLevels' => ['entry', 'junior', 'mid', 'senior', 'lead', 'principal', 'executive', 'intern'],
-            'userRole' => Auth::user()?->role ?? 'guest',
+            'userRole' => Auth::user()?->getPrimaryRole()?->slug ?? 'guest',
         ]);
     }
 
@@ -304,21 +300,21 @@ class JobListingController extends Controller
      */
     public function publicShow(JobListing $jobListing): Response
     {
-        $jobListing->load(['category', 'location', 'user']);
+        $jobListing->load(['category', 'locations', 'user']);
 
         $hasApplied = false;
         $canApply = false;
 
         if (Auth::check()) {
             $hasApplied = $jobListing->applications()->where('user_id', Auth::id())->exists();
-            $canApply = Auth::user()->role === 'job_seeker' && $jobListing->is_active && $jobListing->application_deadline >= now() && ! $hasApplied;
+            $canApply = Auth::user()->hasRole('job-seeker') && $jobListing->is_active && $jobListing->application_deadline >= now() && ! $hasApplied;
         }
 
         return Inertia::render('jobs/show', [
             'job' => $jobListing,
             'hasApplied' => $hasApplied,
             'canApply' => $canApply,
-            'userRole' => Auth::user()?->role ?? 'guest',
+            'userRole' => Auth::user()?->getPrimaryRole()?->slug ?? 'guest',
         ]);
     }
 

@@ -27,7 +27,7 @@ class ApplicationFactory extends Factory
             'phone' => fake()->optional(0.7)->phoneNumber(),
             'education_level' => fake()->optional(0.7)->randomElement(['high-school', 'diploma', 'bachelor', 'master', 'phd']),
             'years_of_experience' => fake()->optional(0.7)->numberBetween(0, 15),
-            'resume_path' => 'resumes/' . fake()->uuid() . '.pdf',
+            'resume_path' => 'resumes/'.fake()->uuid().'.pdf',
             'expected_salary' => fake()->optional(0.5)->randomFloat(2, 30000, 500000),
             'ats_score' => $hasAtsScore ? [
                 'percentage' => fake()->numberBetween(0, 100),
@@ -37,7 +37,7 @@ class ApplicationFactory extends Factory
             'matched_keywords' => $hasAtsScore ? fake()->randomElements([
                 'JavaScript', 'React', 'Node.js', 'Python', 'SQL', 'Docker', 'AWS',
                 'Git', 'TypeScript', 'GraphQL', 'REST API', 'MongoDB', 'Redis',
-            ], fake()->numberBetween(5, 15)) : null,
+            ], fake()->numberBetween(5, 13)) : null,
             'missing_keywords' => $hasAtsScore ? fake()->randomElements([
                 'Kubernetes', 'GraphQL', 'TypeScript', 'AWS', 'Microservices',
                 'System Design', 'CI/CD', 'Terraform',
@@ -83,7 +83,7 @@ class ApplicationFactory extends Factory
             'matched_keywords' => fake()->randomElements([
                 'JavaScript', 'React', 'Node.js', 'Python', 'SQL', 'Docker', 'AWS',
                 'Git', 'TypeScript', 'GraphQL', 'REST API', 'MongoDB', 'Redis',
-            ], fake()->numberBetween(8, 15)),
+            ], fake()->numberBetween(8, 13)),
             'missing_keywords' => fake()->randomElements([
                 'Kubernetes', 'GraphQL', 'TypeScript', 'AWS', 'Microservices',
                 'System Design', 'CI/CD', 'Terraform',
@@ -104,7 +104,7 @@ class ApplicationFactory extends Factory
                 'JavaScript', 'React', 'Node.js', 'Python', 'SQL', 'Docker', 'AWS',
                 'Git', 'TypeScript', 'GraphQL', 'REST API', 'MongoDB', 'Redis',
                 'Kubernetes', 'Microservices', 'System Design', 'CI/CD', 'Terraform',
-            ], fake()->numberBetween(15, 19)),
+            ], fake()->numberBetween(15, 17)),
             'missing_keywords' => fake()->randomElements(['GraphQL', 'Terraform'], fake()->numberBetween(0, 2)),
             'ats_calculation_status' => 'completed',
         ]);
